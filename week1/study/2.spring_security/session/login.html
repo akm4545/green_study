@@ -1,0 +1,10 @@
+<form th:action="@{/auth/login}" method="POST" >
+    <div>
+        <div>
+            사용자 이름 또는 비밀번호를 확인해 주세요.
+        </div>
+    </div>
+    <input type="text" name="username" placeholder="유저네임" required="required" autocomplete="off" /><br/>
+    <input type="password" name="password" placeholder="비밀번호" required="required" /><br/>
+    <button type="submit">로그인</button><br/>
+</form>
