@@ -1,0 +1,11 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://localhost:3306/dplace?serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowMultiQueries=true
+    username: root
+    password: !@jang9645
+mybatis:
+  mapper-locations: mapper/*.xml
