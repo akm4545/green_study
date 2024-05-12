@@ -1,7 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "//mybatis.org/DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
-<mapper namespace="mybatis">
+<mapper namespace="com.example.dplace.board.repository.BoardMapperRepository">
 
+	<insert id="boardCreate" parameterType="com.example.dplace.board.repository.BoardMapperDto" useGeneratedKeys="true" keyProperty="boardSeq" keyColumn="board_seq">
+		INSERT INTO board
+		(
+			 board_title
+			, board_content
+			, user_seq
+		)
+		values
+		(
+			  #{boardTitle}
+			, #{boardContent}
+			, #{userSeq}
+		)
+	</insert>
 
 </mapper>

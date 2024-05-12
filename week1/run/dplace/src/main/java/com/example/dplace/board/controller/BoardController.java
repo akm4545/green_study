@@ -5,13 +5,13 @@ import com.example.dplace.board.dto.boardCreateDto.BoardCreateResponseDto;
 import com.example.dplace.board.dto.boardDetailDto.BoardDetailResponseDto;
 import com.example.dplace.board.dto.boardListDto.BoardListResponseDto;
 import com.example.dplace.board.dto.boardUpdateDto.BoardUpdateResponseDto;
+import com.example.dplace.board.repository.BoardMapperDto;
 import com.example.dplace.board.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.annotations.Delete;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 @Controller
@@ -23,8 +23,11 @@ public class BoardController {
 	// 1.api 게시글 생성 (Post)
 	@PostMapping("/board")
 	public @ResponseBody BoardCreateResponseDto boardCreate(@RequestBody BoardCreateRequestDto requestDto){
-		boardService.boardCreate(requestDto);
-		return null;
+		System.out.println("zz : " + requestDto);
+		Integer boardSeq = boardService.boardCreate(requestDto);
+		return BoardCreateResponseDto.builder()
+				.boardSeq(boardSeq)
+				.build();
 	}
 
 	// 2. 게시글 목록

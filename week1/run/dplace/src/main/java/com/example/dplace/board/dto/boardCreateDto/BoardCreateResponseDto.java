@@ -6,5 +6,5 @@ import lombok.Data;
 @Data
 @Builder
 public class BoardCreateResponseDto {
-
+	private Integer boardSeq;
 }
