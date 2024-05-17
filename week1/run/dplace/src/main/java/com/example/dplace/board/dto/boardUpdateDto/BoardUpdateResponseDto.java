@@ -6,4 +6,7 @@ import lombok.Data;
 @Data
 @Builder
 public class BoardUpdateResponseDto {
+
+	private String resultCode;
+
 }

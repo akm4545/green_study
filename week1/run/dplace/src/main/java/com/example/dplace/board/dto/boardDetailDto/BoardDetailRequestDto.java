@@ -6,4 +6,7 @@ import lombok.Data;
 @Data
 @Builder
 public class BoardDetailRequestDto {
+
+	private Integer boardSeq;
+
 }

@@ -4,11 +4,11 @@
 <mapper namespace="com.example.dplace.board.repository.BoardMapperRepository">
 
 	<insert id="boardCreate" parameterType="com.example.dplace.board.repository.BoardMapperDto" useGeneratedKeys="true" keyProperty="boardSeq" keyColumn="board_seq">
-		INSERT INTO board
+		INSERT INTO	BOARD
 		(
-			 board_title
-			, board_content
-			, user_seq
+			 BOARD_TITLE
+			, BOARD_CONTENT
+			, USER_SEQ
 		)
 		values
 		(
@@ -18,4 +18,43 @@
 		)
 	</insert>
 
+	<select id="boardListTotCnt" resultType="java.lang.Integer">
+		SELECT	COUNT(*)
+		FROM	BOARD
+		ORDER BY BOARD_SEQ DESC
+	</select>
+
+	<select id="boardList" resultType="com.example.dplace.board.repository.BoardMapperDto">
+		SELECT	*
+		FROM	BOARD
+		ORDER BY BOARD_SEQ DESC
+	</select>
+
+	<select id="boardDetail" resultType="com.example.dplace.board.repository.BoardMapperDto">
+		SELECT	*
+		FROM	BOARD
+		WHERE	BOARD_SEQ = #{boardSeq}
+	</select>
+
+	<update id="boardUpdate" parameterType="com.example.dplace.board.repository.BoardMapperDto">
+		UPDATE BOARD
+		<set>
+			<if test="boardTitle != null and boardTitle != ''">
+				BOARD_TITLE = #{boardTitle} ,
+			</if>
+			<if test="boardContent != null and boardContent != ''">
+				BOARD_CONTENT = #{boardContent} ,
+			</if>
+			<if test="userSeq != null and userSeq > 0">
+				USER_SEQ = #{userSeq} ,
+			</if>
+		</set>
+		WHERE	BOARD_SEQ = #{boardSeq}
+	</update>
+
+	<delete id="boardDelete" parameterType="com.example.dplace.board.repository.BoardMapperDto">
+		DELETE
+		FROM	BOARD
+		WHERE	BOARD_SEQ = #{boardSeq}
+	</delete>
 </mapper>
