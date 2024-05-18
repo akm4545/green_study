@@ -3,4 +3,46 @@
 
 <mapper namespace="com.example.dplace.user.repository.UserMapperRepository">
 
+	<insert id="userCreate" parameterType="com.example.dplace.user.repository.UserMapperDto" useGeneratedKeys="true" keyProperty="userSeq" keyColumn="user_seq">
+		INSERT INTO	USER
+		(
+		  USER_ID
+		, USER_PASSWORD
+		, USER_AUTH_TYPE
+		)
+		values
+			(
+			  #{userId}
+			, #{userPassword}
+			, #{userAuthType}
+			)
+	</insert>
+
+	<select id="userDetail" parameterType="com.example.dplace.user.repository.UserMapperDto">
+		SELECT	*
+		FROM	USER
+		WHERE	USER_SEQ = #{userSeq}
+	</select>
+
+	<update id="userUpdate" parameterType="com.example.dplace.user.repository.UserMapperDto">
+		UPDATE USER
+		<set>
+			<if test="userId != null and userId != ''">
+				USER_ID = #{userId} ,
+			</if>
+			<if test="userPassword != null and userPassword != ''">
+				USER_PASSWORD = #{userPassword} ,
+			</if>
+			<if test="userAuthType != null and userAuthType != ''">
+				USER_AUTH_TYPE = #{userAuthType} ,
+			</if>
+		</set>
+		WHERE	USER_SEQ = #{userSeq}
+	</update>
+
+	<delete id="userDelete" parameterType="com.example.dplace.user.repository.UserMapperDto">
+		DELETE
+		FROM	USER
+		WHERE	USER_SEQ = #{userSeq}
+	</delete>
 </mapper>
