@@ -12,5 +12,12 @@
 </head>
 <body>
 	<h1>게시판 리스트 / ${test}</h1>
+	<div id="root">
+
+	</div>
 </body>
+<script src="/js/board.js" ></script>
+<script>
+	board.boardList();
+</script>
 </html>
