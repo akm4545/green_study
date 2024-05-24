@@ -60,7 +60,6 @@ public class BoardController {
 	// 6. 게시판 리스트 화면
 	@GetMapping("/board/view/list")
 	public String viewList(ModelMap model){
-		model.addAttribute("test", "테스트");
 		return "www/board/board_list";
 	}
 }

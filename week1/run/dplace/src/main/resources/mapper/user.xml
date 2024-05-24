@@ -45,4 +45,16 @@
 		FROM	USER
 		WHERE	USER_SEQ = #{userSeq}
 	</delete>
+
+	<select id="userListTotCnt" resultType="java.lang.Integer">
+		SELECT	COUNT(*)
+		FROM	USER
+		ORDER BY USER_SEQ DESC
+	</select>
+
+	<select id="userList" resultType="com.example.dplace.user.repository.UserMapperDto">
+		SELECT	*
+		FROM	USER
+		ORDER BY USER_SEQ DESC
+	</select>
 </mapper>

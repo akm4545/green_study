@@ -8,18 +8,18 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-	<link rel="shortcut icon" href="#"> <!-- favicon 없을경우 사용 -->
-	<title>게시판 리스트</title>
+  <link rel="shortcut icon" href="#"> <!-- favicon 없을경우 사용 -->
+  <title>회원 리스트</title>
 </head>
 <body>
-	<h1>게시판 리스트</h1>
-	<a href="/">메인 이동</a>
-	<div id="root">
+<h1>회원 리스트</h1>
+<a href="/">메인 이동</a>
+<div id="root">
 
-	</div>
+</div>
 </body>
-<script src="/js/board.js" ></script>
+<script src="/js/user.js" ></script>
 <script>
-	board.boardList();
+  user.userList();
 </script>
 </html>

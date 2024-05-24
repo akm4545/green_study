@@ -3,6 +3,9 @@ package com.example.dplace.user.service;
 import com.example.dplace.user.dto.userCreateDto.UserCreateRequestDto;
 import com.example.dplace.user.dto.userDeleteDto.UserDeleteRequestDto;
 import com.example.dplace.user.dto.userDeleteDto.UserDeleteResponseDto;
+import com.example.dplace.user.dto.userDetailDto.UserDetailRequestDto;
+import com.example.dplace.user.dto.userDetailDto.UserDetailResponseDto;
+import com.example.dplace.user.dto.userListDto.UserListResponseDto;
 import com.example.dplace.user.dto.userUpdateDto.UserUpdateRequestDto;
 import com.example.dplace.user.dto.userUpdateDto.UserUpdateResponseDto;
 import com.example.dplace.user.repository.UserMapperDto;
@@ -24,6 +27,28 @@ public class UserService {
 				.build();
 		Integer userSeq = userMapperRepository.userCreate(userMapperDto);
 		return userSeq;
+	}
+
+	public UserListResponseDto userList() {
+		return UserListResponseDto.builder()
+				.totCnt(userMapperRepository.userListTotCnt())
+				.userMapperDtoList(userMapperRepository.userList())
+				.build();
+	}
+
+	public UserDetailResponseDto userDetail(UserDetailRequestDto requestDto) {
+		UserMapperDto paramUserMapperDto = UserMapperDto.builder()
+				.userSeq(requestDto.getUserSeq())
+				.build();
+		UserMapperDto resultUserMapperDto = userMapperRepository.userDetail(paramUserMapperDto);
+		if(resultUserMapperDto != null){
+			return UserDetailResponseDto.builder()
+					.userId(resultUserMapperDto.getUserId())
+					.userPassword(resultUserMapperDto.getUserPassword())
+					.userAuthType(resultUserMapperDto.getUserAuthType())
+					.build();
+		}
+		return UserDetailResponseDto.builder().build();
 	}
 
 	public UserUpdateResponseDto userUpdate(UserUpdateRequestDto requestDto) {
