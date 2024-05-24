@@ -8,6 +8,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
+	<link rel="shortcut icon" href="#"> <!-- favicon 없을경우 사용 -->
 	<title>게시판 리스트</title>
 </head>
 <body>

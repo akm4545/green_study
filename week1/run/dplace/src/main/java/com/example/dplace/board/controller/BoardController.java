@@ -45,7 +45,7 @@ public class BoardController {
 	}
 
 	// 4. 게시글 수정
-	@PutMapping("/board/{boardSeq}")
+	@PutMapping(value = "/board/{boardSeq}")
 	public @ResponseBody BoardUpdateResponseDto boardUpdate(@PathVariable Integer boardSeq, @RequestBody BoardUpdateRequestDto requestDto){
 		requestDto.setBoardSeq(boardSeq);
 		return boardService.boardUpdate(requestDto);
