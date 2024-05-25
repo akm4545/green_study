@@ -3,6 +3,7 @@ package com.example.dplace.user.repository;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
+import java.util.Optional;
 
 @Mapper
 public interface UserMapperRepository {
@@ -17,4 +18,6 @@ public interface UserMapperRepository {
 	Integer userListTotCnt();
 
 	List<UserMapperDto> userList();
+
+	UserMapperDto userSelectByUserId(UserMapperDto userMapperDto);
 }

@@ -57,4 +57,10 @@
 		FROM	USER
 		ORDER BY USER_SEQ DESC
 	</select>
+
+	<select id="userSelectByUserId" parameterType="com.example.dplace.user.repository.UserMapperDto">
+		SELECT	*
+		FROM	USER
+		WHERE	USER_ID = #{userId}
+	</select>
 </mapper>

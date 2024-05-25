@@ -347,7 +347,8 @@ const board = {
     boardUpdate: async (dtoData, key) => {
         let data = await board.requestMan.boardUpdate(dtoData, key);
         let resultCode = data.resultCode;
-        alert(resultCode == "SUCCESS" ? "정상처리 되었습니다" : "실패했습니다");
+        console.log(typeof resultCode);
+        alert(resultCode === "SUCCESS" ? "정상처리 되었습니다" : "실패했습니다");
         if(resultCode == "SUCCESS"){
             board.boardDetail(key);
         } else {
