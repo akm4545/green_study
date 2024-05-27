@@ -34,6 +34,8 @@ public class SpringSecurityConfig {
 				.authorizeHttpRequests((authorizeRequests) ->
 						authorizeRequests
 //								.requestMatchers("/post/**").hasRole("ROLE_USER")
+								.dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll() //jsp 리졸버방식 허용
+								.requestMatchers("/", "/index.do", "/login/**").permitAll()
 								.anyRequest().authenticated()
 				)// 3번
 				.exceptionHandling((exceptionConfig) ->
@@ -51,8 +53,6 @@ public class SpringSecurityConfig {
 						logoutConfig.logoutSuccessUrl("/")
 				)
 				.userDetailsService(myUserDetailsService);
-
-
 		return http.build();
 	}
 
