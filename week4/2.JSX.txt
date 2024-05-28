@@ -1,0 +1,229 @@
+--------------------------- JSX ---------------------------
+자바스크립트의 확장 문법 XML과 유사
+코드 번들링 과정에서 바벨을 사용하여 일반 자바스크립트로 변환
+자바스크립트 문법은 아니다
+
+function App () {
+    return (
+        <div>
+        Hello <b>react</b>
+    );
+}
+
+JSX 문법을 사용하지 않다면
+매우 불편한 형식으로 사용해야 한다
+
+function App() {
+    return React.createElement("div", null, "Hello", React.createElement("b", null, "react"));
+}
+
+장점
+1. HTML 코드와 유사하여 가독성이 높고 작성하기 쉽다
+2. 작성한 컴포넌트도 JSX 안에서 작성 가능
+
+
+--------------------------- JSX 문법 ---------------------------
+1. 컴포넌트에 여러 요소가 있다면 반드시 부모 요소 하나로 감싸야 한다
+
+//에러
+function App () {
+    return (
+        <h1>리액트 안녕!</h1>
+        <h2>잘 작동하니?<h2>
+    )
+}
+
+export default App;
+
+//ok
+function App () {
+    return (
+        <>
+            <h1>리액트 안녕!</h1>
+            <h2>잘 작동하니?<h2>
+        </>
+    )
+}
+
+export default App;
+
+
+2. 자바스크립트 표현
+JSX 안에서 자바스크립트 표현식 작성 가능 자바스크립트 코드를 {}로 감싸야 한다
+function App () {
+    const name = '리액트';
+
+    return (
+        <>
+            <h1>{name} 안녕!</h1>
+            <h2>잘 작동하니?</h2>
+        <>
+    )
+}
+
+
+3. if문 대신 조건부 연산자
+JSX 내부의 자바스크립트 표현식에는 if문 사용 불가 조건에 따라 다른 내용을 렌더링해야 한다면 JSX 밖에 if문을 사용하여 사전에 값을 설정하거나 
+{}안에 삼항연산자 사용
+
+function App() {
+    const name = '리액트';
+
+    return (
+        <div>
+            {name === '리액트' ? (
+                <h1>리액트입니다.</h1>
+            ) : (
+                <h2>리액트가 아닙니다.</h2>
+            )}
+        </div>
+    );
+}
+
+특정 조건을 만족할 때만 렌더링 하는 코드를
+
+function App() {
+    const name = '뤼액트';
+    
+    return <div>{name === '리액트' ? <h1>리액트입니다.</h1> : null}
+}
+
+&& 연산자를 사용해서 더 짧게 조건부 렌더링
+function App() {
+    const name = '뤼액트';
+
+    return <div>{name === '리액트' && <h1>리액트입니다.</h1>}</div>;
+}
+
+주의점은 falsy한 값인 0은 예외적으로 화면에 나타난다
+const number = 0;
+return number && <div>내용</div>
+
+
+4. undefined를 렌더링 하지 않기
+
+// 에러
+function App () {
+    const name = undefined;
+
+    return name;
+}
+
+
+//어떤 값이 undeined일 수도 있다면 || 연산자를 사용하여 기본값 지정
+function App () {
+    const name = undefined;
+
+    return name || '값이 undefined입니다,';
+}
+
+
+//JSX 내부에서 렌더링은 ok
+function App () {
+    const name = undefined;
+
+    return <div>{name}</div>
+}
+
+// JSX 내부에서 undefined일때 기본값 사용
+function App () {
+    const name = undefined;
+
+    return <div>{name || '리액트'}</div>
+}
+
+--------------------------- 인라인 스타일링 ---------------------------
+DOM 요소에 스타일 적용 시 문자열 형태가 아닌 객체 형태로 넣어야 한다
+카멜 표기법으로 작성해야 한다
+
+// style 객체 선언 후 css 적용 방법
+function App () {
+    const name = '리액트';
+
+    const style = {
+        backgroundColor: 'black',
+        color: 'aqua',
+        fontSize: '48px',
+        fontWeight: 'bold',
+        padding: 16
+    };
+
+    return <div style={style}>{name}</div>;
+}
+
+//직접 인라인 스타일 작성후 적용
+function App() {
+    const name = '리액트';
+
+    return (
+        <div
+            style={{
+                backgroundColor: 'black',
+                color: 'aqua',
+                fontSize: '48px',
+                fontWeight: 'bold',
+                padding: 16
+            }}
+        >
+            {name}
+        </div>
+    );
+}
+
+
+--------------------------- class 대신 className ---------------------------
+JSX에서는 class가 아닌 className으로 설정해 주어야 한다
+
+//App.css
+.react {
+    background: aqua;
+    color: black;
+    font-size: 48px;
+    font-weight: bold;
+    padding: 16px;
+}
+
+//App.js
+function App() {
+    const name = '리액트';
+
+    return <div className="react">{name}</div>
+}
+
+
+--------------------------- 꼭 닫아야 하는 코드 ---------------------------
+HTML에서는 <input>형식으로 사용 가능하지만 리액트에서는 오류가 발생
+
+function App() {
+    const name = '리액트'
+
+    return (
+        <>
+            <div className="react">{name}</div>
+            <input> 
+            // -> <input></input> 혹은 <input /> 형식으로 사용해야 한다 후자 방식을 셀프 클로징 방식이라 한다
+        <>       
+    )
+}
+
+
+--------------------------- 주석 ---------------------------
+리액트의 주석은 {/* ... */} 형태다
+
+function App() {
+    const name = '리액트';
+
+    return (
+        <>
+            {/* 주석은 이렇게 작성합니다. */}
+            <div
+                className="react" //시작 태그를 여러 줄로 작성하게 된다면 여기에 주석을 작성할 수 있습니다.
+            >
+                {name}
+            </div>
+            // 하지만 이런 주석이나
+            /* 이런 주석은 페이지에 그대로 나타나게 됩니다 */
+            <input />
+        </>
+    );
+}
