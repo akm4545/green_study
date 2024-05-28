@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -36,6 +38,8 @@ public class SpringSecurityConfig {
 //								.requestMatchers("/post/**").hasRole("ROLE_USER")
 								.dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll() //jsp 리졸버방식 허용
 								.requestMatchers("/", "/index.do", "/login/**").permitAll()
+								.requestMatchers("/posts/**").hasRole("USER_ROLE")
+								.requestMatchers("/admins/**").hasRole("ADMIN_ROLE")
 								.anyRequest().authenticated()
 				)// 3번
 				.exceptionHandling((exceptionConfig) ->
@@ -70,4 +74,11 @@ public class SpringSecurityConfig {
 				writer.write("{error: '403'}");
 				writer.flush();
 			};
+
+	// 로그인시 입력한 비밀번호와 DB에 저장된 유저정보를 매칭시 암호화여부를 검사하는듯
+	// DB에는 비밀번호가 암호화처리되어 저장되어있어야함, 그렇지 않고 로그인시 오류 발생 : There is no PasswordEncoder mapped for the id "null"
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 }

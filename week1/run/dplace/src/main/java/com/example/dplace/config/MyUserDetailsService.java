@@ -18,11 +18,13 @@ public class MyUserDetailsService implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		UserMapperDto userMapperDto = UserMapperRepository.userSelectByUserId(UserMapperDto.builder().userId(username).build());
-
+		if(userMapperDto == null){
+			throw new UsernameNotFoundException("없는 회원 입니다 ...");
+		}
 		return User.builder()
 				.username(userMapperDto.getUserId())
 				.password(userMapperDto.getUserPassword())
-				.roles("USER_USERS")
+				.roles(userMapperDto.getUserAuthType())// USER_ROLE 사용자 / ADMIN_ROLE 관리자
 				.build();
 	}
 }

@@ -14,5 +14,6 @@
   <h3>메인</h3>
   <div><a href="/user/view/list">회원 목록</a></div>
   <div><a href="/board/view/list">게시판 리스트</a></div>
+  <div><a href="/login/login">로그인</a></div>
 </body>
 </html>
