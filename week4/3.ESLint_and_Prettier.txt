@@ -1,0 +1,45 @@
+--------------------------- ESLint ---------------------------
+문법 검사 도구 VS Code 마켓 플레이스에서 설치
+ESLint는 코드를 작성할 때 실수를 하면 에러 혹은 경고메시지를 VS Code 에디터에서 바로 확인 가능
+초록색 줄이 그어진 코드는 무시 가능 빨간색 줄이 그어진 코드는 반드시 코쳐야 함
+
+--------------------------- Prettier ---------------------------
+코드 스타일 자동 정리 도구 VS Code 마켓 플레이스에서 설치
+
+import './App.css';
+
+function App () {
+    const name = '리액트';
+    
+    return (
+        <div>
+            <div className="react">{
+                naem
+            }</div>
+                    <h1>들여쓰기가 이상한</h1>
+                <h2>코드</h2>
+            <p>입니다.</p>
+                        </div>
+    )
+}
+
+export default App;
+
+VS Code에서 F1을 누르고 format이라고 입혁한 다음 Enter
+
+.prettierrc 파일에서 스타일 커스터마이징 가능
+
+예제 
+탭대신 공백 두칸 사용
+큰따옴표 대신 작은 따옴표 사용
+세미콜론은 언제나 붙이도록 설정
+{
+    "singleQuote": true,
+    "semi": true,
+    "useTabs": false,
+    "tabWidth": 2
+}
+
+저장시 자동으로 코드 정리
+파일 > 기본 설정 > 설정 클릭
+상단 텍스트 박스에서 format on save를 검색 체크박스 체크

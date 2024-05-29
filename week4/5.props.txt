@@ -1,0 +1,238 @@
+--------------------------- props ---------------------------
+properties 줄임말 컴포넌트 속성을 설정할 때 사용하는 요소 
+props 값은 해당 컴포넌트를 불러와 사용하는 부모 컴포넌트에서 설정 가능
+
+--------------------------- JSX 내부에서 props 렌더링 ---------------------------
+props의 값은 컴포넌트 함수의 파라미터로 받아 와서 사용할 수 있다
+렌더링 시 JSX 내부에서 {} 기호로 감싸 주면 된다
+
+const MyComponent = props => {
+    return <div>안녕하세요, 제 이름은 {props.name}입니다.</div>
+}
+
+export default MyComponent
+
+--------------------------- 컴포넌트 사용 시 props 값 지정 ---------------------------
+App.js
+import MyComponent from './MyComponent'
+
+const App = () => {
+    return <MyComponent name={React} />
+}
+
+export default App
+
+--------------------------- props 기본값 지정 ---------------------------
+const MyComponent = props => {
+    return <div>안녕하세요, 제 이름은 {props.name}입니다.</div>
+}
+
+MyComponent.defaultProps = {
+    name: '기본이름'
+}
+
+export default MyComponent
+
+
+--------------------------- 태그 사이의 내용을 보여주는 children ---------------------------
+태그 사이의 내용을 보여주는 props
+
+App.js
+MyComponent 태그 사이에 props로 리액트가 들어간다
+import MyComponent from './MyComponent';
+
+const App = () => {
+    return <MyComponent>리액트</MyComponent>
+}
+
+export default App;
+
+MyComponent.js
+const MyComponent = props => {
+    return (
+        <div>
+            안녕하세요 제 이름은 {props.name}입니다. <br />
+            children 값은 {props.children}
+            입니다.
+        </div>
+    )
+}
+
+MyComponent defaultProps = {
+    name: '기본 이름'
+}
+
+export default MyComponent
+
+
+--------------------------- 비구조화 할당 문법(구조분해 문법) 을 사용하여 props내부 값 추출 ---------------------------
+MyComponent.js
+const MyComponent = props => {
+    const { name, children } = props;
+
+    return (
+        <div>
+            안녕하세요 제 이름은 {name}입니다. <br />
+            children 값은 {children}
+            입니다.
+        </div>
+    )
+}
+
+MyComponent defaultProps = {
+    name: '기본 이름'
+}
+
+export default MyComponent
+
+더욱 간략하게 사용
+MyComponent.js
+const MyComponent = ({name, children}) => {
+    
+    return (
+        <div>
+            안녕하세요 제 이름은 {name}입니다. <br />
+            children 값은 {children}
+            입니다.
+        </div>
+    )
+}
+
+MyComponent defaultProps = {
+    name: '기본 이름'
+}
+
+export default MyComponent
+
+--------------------------- propTypes를 통한 props 검증 ---------------------------
+컴포넌트의 필수 props를 지정하거나 props의 타입을 지정할때 사용
+
+MyComponent.js
+import PropTypes from 'prop-types'
+
+const MyComponent = ({name, children}) => {
+    
+    return (
+        <div>
+            안녕하세요 제 이름은 {name}입니다. <br />
+            children 값은 {children}
+            입니다.
+        </div>
+    )
+}
+
+MyComponent defaultProps = {
+    name: '기본 이름'
+}
+
+MyComponent.propTypes = {
+    name: PropTypes.string
+}
+
+export default MyComponent
+
+
+App.js (경고 발생)
+MyComponent 태그 사이에 props로 리액트가 들어간다
+import MyComponent from './MyComponent';
+
+const App = () => {
+    return <MyComponent name={3}>리액트</MyComponent>
+}
+
+
+MyComponent.js (필수값 지정 - 경고 발생)
+import PropTypes from 'prop-types'
+
+const MyComponent = ({name, favoriteNumber, children}) => {
+    
+    return (
+        <div>
+            안녕하세요 제 이름은 {name}입니다. <br />
+            children 값은 {children}
+            입니다.
+            <br />
+            제가 좋아하는 숫자는 {favoriteNumber}입니다.
+        </div>
+    )
+}
+
+MyComponent defaultProps = {
+    name: '기본 이름'
+}
+
+MyComponent.propTypes = {
+    name: PropTypes.string
+    favoriteNumber: PropTypes.number.isRequired
+}
+
+export default MyComponent
+
+
+--------------------------- 클래스형 컴포넌트에서 props 사용 ---------------------------
+render 함수에서 this.props를 조회하면 된다
+defaultProps와 propsTypes는 같은 방식으로 설정할 수있다
+
+MyComponent.js
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+
+class MyComponent extends Component {
+    render() {
+        const { name, favoriteNumber, children } = this.props 
+
+        return (
+            <div>
+                안녕하세요 제 이름은 {name}입니다. <br />
+                children 값은 {children}
+                입니다.
+                <br />
+                제가 좋아하는 숫자는 {favoriteNumber}입니다.
+            </div>
+        )
+    }
+}
+
+MyComponent defaultProps = {
+    name: '기본 이름'
+}
+
+MyComponent.propTypes = {
+    name: PropTypes.string
+    favoriteNumber: PropTypes.number.isRequired
+}
+
+export default MyComponent
+
+
+defaultProps와 propsTypes를 설정할 때 class 내부에서 지정하는 방법
+MyComponent.js
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+
+class MyComponent extends Component {
+    static defaultProps = {
+        name: '기본 이름'
+    }
+
+    static propTypes = {
+        name: PropTypes.string,
+        favoriteNumber: PropTypes.number.isRequired
+    }
+
+    render() {
+        const { name, favoriteNumber, children } = this.props 
+
+        return (
+            <div>
+                안녕하세요 제 이름은 {name}입니다. <br />
+                children 값은 {children}
+                입니다.
+                <br />
+                제가 좋아하는 숫자는 {favoriteNumber}입니다.
+            </div>
+        )
+    }
+}
+
+export default MyComponent
