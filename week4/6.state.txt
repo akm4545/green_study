@@ -1,0 +1,282 @@
+--------------------------- state ---------------------------
+컴포넌트 내부에서 바뀔 수 있는 값
+props는 컴포넌트가 사용되는 과정에서 부모 컴포넌트가 설정하는 값 읽기 전용으로만 사용 가능
+state는 컴포넌트 자신이 가지고 있는 수정 가능한 값
+
+
+--------------------------- 클래스형 컴포넌트의 state ---------------------------
+Counter.js
+import React, { Component } from 'react';
+
+class Counter extends Component {
+    constructor(props) {
+        //반드시 super 호출 
+        // 컴포넌트가 상속받고 있는 리액트의 Component클래스가 지닌 생성자 함수 호출
+        super(props);
+
+        //state의 초깃값 설정
+        //state는 객체 형식이여야 한다
+        this.stats = {
+            number: 0
+        };
+    }
+
+    render () {
+        const { number } = this.state // state를 조회할 때는 this.state로 조회한다.
+
+        return (
+            <div>
+                <h1>{number}</h1>
+                <button
+                    // onClick을 통해 버튼이 클릭되었을 때 호출할 함수를 저장한다.
+                    onClick={() => {
+                        // this.setState를 사용하여 state에 새로운 값을 넣을 수 있다.
+                        this.setState({ number: number + 1});
+                    }}
+                >
+                    +1
+                </button>
+            </div>
+        );
+    }
+}
+
+export default Counter;
+
+
+App.js
+import Counter from './Counter';
+
+const App = () => {
+    return <Counter />;
+};
+
+export default App;
+
+
+--------------------------- state 객체 안에 여러 값을 다루기 ---------------------------
+Counter.js
+import React, { Component } from 'react'
+
+class Counter extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            number: 0,
+            fixedNumber: 0
+        }
+    }
+
+    render() {
+        const { number, fixedNumber } = this.state
+
+        return (
+            <div>
+                <h1>{number}</h1>
+                <h2>바뀌지 않는 값: {fixedNumber}</h2>
+                <button
+                    onClick={() => {
+                        this.setState({ number: number + 1})
+                    }}
+                >
+                    +1
+                </button>
+            </div>
+        )
+    }
+}
+
+export default Counter;
+
+
+
+--------------------------- 생성자 밖에서 state 선언 ---------------------------
+Counter.js
+import React, { Component } from 'react';
+
+class Counter extends Component {
+    state = {
+        number: 0,
+        fixedNumber: 0
+    }l
+
+    render() {
+        const { number, fixedNumber } = this.state
+
+        return (
+            <div>
+                <h1>{number}</h1>
+                <h2>바뀌지 않는 값: {fixedNumber}</h2>
+                <button
+                    onClick={() => {
+                        this.setState({ number: number + 1})
+                    }}
+                >
+                    +1
+                </button>
+            </div>
+        )
+    }
+}
+
+export default Counter;
+
+
+
+--------------------------- this.setState에 객체 대신 함수 인자 전달 ---------------------------
+onClick={() => {
+    this.setState({ number: number + 1})
+    this.setState({ number: number + 1})
+}}
+
+해당 함수를 실행하면 기댓값이 number + 2 지만 number + 1로 작동한다 
+state 값이 바로 바뀌지는 않기 때문이다 
+
+Counter.js
+import React, { Component } from 'react';
+
+class Counter extends Component {
+    state = {
+        number: 0,
+        fixedNumber: 0
+    }l
+
+    render() {
+        const { number, fixedNumber } = this.state
+
+        return (
+            <div>
+                <h1>{number}</h1>
+                <h2>바뀌지 않는 값: {fixedNumber}</h2>
+                <button
+                    onClick={() => {
+                        // prevState는 기존 상태, 현재 지니고 있는 상태가 필요하다면 (prevState, props) => {...}
+                        this.setState(prevState => {
+                            return {
+                                number: prevState.number + 1
+                            }
+                        })
+
+                        //위 코드와 아래 코드는 동일 
+                        //아래 코드는 함수에서 바로 객체를 반환한다는 의미
+                        this.setState(prevState => ({
+                            number: prevState.number + 1
+                        }))
+                    }}
+                >
+                    +1
+                </button>
+            </div>
+        )
+    }
+}
+
+export default Counter;
+
+
+--------------------------- this.setState가 끝난 후 특정 작업 실행 ---------------------------
+Counter.js
+import React, { Component } from 'react';
+
+class Counter extends Component {
+    state = {
+        number: 0,
+        fixedNumber: 0
+    }l
+
+    render() {
+        const { number, fixedNumber } = this.state
+
+        return (
+            <div>
+                <h1>{number}</h1>
+                <h2>바뀌지 않는 값: {fixedNumber}</h2>
+                <button
+                    onClick={() => {
+                        // 콜백함수를 넘기면 setState 작업 후 실행
+                        this.setState(
+                            {
+                                number: number + 1
+                            },
+                            () => {
+                                console.log('방금 setState가 호출되었습니다.')
+                                console.log(this.state)
+                            }
+                        )
+                    }}
+                >
+                    +1
+                </button>
+            </div>
+        )
+    }
+}
+
+export default Counter;
+
+
+
+--------------------------- 함수 컴포넌트에서 useState사용 ---------------------------
+Say.js
+import React, { useState } from 'react'
+
+const Say = () => {
+    //useState(초깃값)
+    //초기값의 형태는 자유
+    //useState 호출시 배열을 반환
+    //첫 번째 요소 = 현재 상태
+    //두 번째 요소 = 상태를 바꿔주는 함수
+    const [message, setMessage] = useState('')
+    const onClickEnter = () => setMessage('안녕하세요!')
+    const onClickLeave = () => setMessage('안녕히 가세요!')
+
+    return (
+        <div>
+            <button onClick={onClickEnter}>입장</button>
+            <button onClick={onClickLeave}>퇴장</button>
+            <h1>{message}</h1>
+        </div>
+    )
+}
+
+export default Say
+
+App.js
+import Say from './Say'
+
+const App = () => {
+    return <Say />
+}
+
+export default App;
+
+
+--------------------------- useState 다중 사용 ---------------------------
+Say.js
+import React, { useState } from 'react'
+
+const Say = () => {
+    const [message, setMessage] = useState('')
+    const [color, setColor] = useState('black')
+    const onClickEnter = () => setMessage('안녕하세요!')
+    const onClickLeave = () => setMessage('안녕히 가세요!')
+
+    return (
+        <div>
+            <button onClick={onClickEnter}>입장</button>
+            <button onClick={onClickLeave}>퇴장</button>
+            <h1 style={{ color }}>{message}</h1>
+            <button style={{ color: 'red' }} onClick={() => setColor('red')}>빨간색</button>
+            <button style={{ color: 'green' }} onClick={() => setColor('green')}>초록색</button>
+            <button style={{ color: 'blue' }} onClick={() => setColor('blue')}>파란색</button>
+        </div>
+    )
+}
+
+export default Say
+
+
+--------------------------- state 주의점 ---------------------------
+클래스형 / 함수형 모두 state 사용 시 전달받은 세터 함수를 사용해야 한다
+배열이나 객체의 값을 업데이트 할때는 객체 사본을 만들고 복사한 후 사본을 세터 함수를 통해 업데이트 한다
