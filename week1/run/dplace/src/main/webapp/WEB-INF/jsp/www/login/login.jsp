@@ -13,7 +13,6 @@
 <body>
 	<h2>로그인 화면 </h2>
 	<form class="form-signin" method="post" action="/login/login-proc">
-
 		<input type="text" id="username" name="username" class="form-control" placeholder="아이디" autofocus="" />
 		<input type="text" id="password" name="password" class="form-control" placeholder="비밀번호" />
 		<input id="joinBtn" type="submit" class="btn btn-secondary active" value="로그인" />

@@ -50,11 +50,13 @@ public class SpringSecurityConfig {
 								.loginPage("/login/login")
 								.usernameParameter("username")
 								.passwordParameter("password")
-								.loginProcessingUrl("/login/login-proc")
-								.defaultSuccessUrl("/", true)
+								.loginProcessingUrl("/login/login-proc")//로그인 처리 컨트롤러가 필요한게 아니라 로그인처리를 통해 인증처리 후 인증정보를 저장. 아이디 비번을 알아서 조회함
+								.defaultSuccessUrl("/", true)//위의 로그인처리 과정으로 인해 해당 컨트롤러에서 인증정보 조회가능
 				)
 				.logout((logoutConfig) ->
-						logoutConfig.logoutSuccessUrl("/")
+						logoutConfig
+								.logoutUrl("/login/logout")
+								.logoutSuccessUrl("/")
 				)
 				.userDetailsService(myUserDetailsService);
 		return http.build();

@@ -15,6 +15,7 @@ public class LoginController {
 		return "www/login/login";
 	}
 
+// 스프링 시큐리티에서 loginProcessingUrl 을 설정하였기에 필요하지 않음
 //	@PostMapping("/login/login-proc")
 //	public String loginLoginProc(@AuthenticationPrincipal UserDetails user){
 //		System.out.println("zz 로그인 처리 인증된 유저정보  : " + user);
