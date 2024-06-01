@@ -38,6 +38,11 @@ public class SpringSecurityConfig {
 
 	private final MyUserDetailsService myUserDetailsService;
 
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
 	// 세션 인증방식
 //	@Bean
 //	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -90,10 +95,6 @@ public class SpringSecurityConfig {
 //
 //	// 로그인시 입력한 비밀번호와 DB에 저장된 유저정보를 매칭시 암호화여부를 검사하는듯
 //	// DB에는 비밀번호가 암호화처리되어 저장되어있어야함, 그렇지 않고 로그인시 오류 발생 : There is no PasswordEncoder mapped for the id "null"
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
 
 	// jwt 토큰인증방식
 	private final JwtUtil jwtUtil;
