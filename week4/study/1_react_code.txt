@@ -14,4 +14,4 @@ import
 SVG 파일과 CSS 파일을 불러와서 사용
 css-loader = CSS 파일 불러오기
 file-loader = 웹 폰트, 미디어 파일 불러오기
-babel-loader = 최신 자바스크립트 문법을 특정 자바스크립트 버전을 ㅗ변환
+babel-loader = 최신 자바스크립트 문법을 특정 자바스크립트 버전을 변환
