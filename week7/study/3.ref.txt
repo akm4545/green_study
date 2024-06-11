@@ -1,0 +1,339 @@
+--------------------------- ref(reference) ---------------------------
+DOM의 id 처럼 리액트 프로젝트 내부에서 DOM에 이름을 다는 방법 
+리액트 컴포넌트 안세어도 id를 사용할 수 있지만 컴포넌트를 재사용 하면 id값에 중복이 생긴다
+권장하지 않는 방식
+
+ref는 전역적으로 작동하지 않고 컴포넌트 내부에서만 작동하기 때문에 이런 문제가 생기지 않는다
+
+
+--------------------------- ref 사용 예시 ---------------------------
+DOM을 꼭 직접적으로 건드려야 할 때 사용 (ref로 고유값을 넣어주고 해당 이름으로 호출)
+
+//일반 HTML + 순수 자바스크립트 코드
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Example</title>
+    <style>
+        .success {
+            background-color: green;
+        }
+
+        .failure {
+            background-color: red;
+        }
+    </style>
+    <script>
+        function validate() {
+            //DOM 요소를 자바스크립트에서 직접 접근한다
+            var input = document.getElementById('password')
+            input.className = '';
+
+            if(input.value === '0000'){
+                input.className = 'success';
+            } else {
+                input.className = 'failure';
+            }
+        }
+    </script>
+    <body>
+        <input type="password" id="password"></input>
+        <button onclick="validate()">Validate</button>
+    </body>
+</html>
+    
+
+--------------------------- 클래스형 컴포넌트에서 state로 dom 컨트롤 ---------------------------
+//ValidationSample.css
+.success {
+    background-color: lightgreen;
+}
+
+.failure {
+    background-color: lightcoral;
+}
+
+//ValidationSample.js
+import React, { Component } from 'react'
+import './ValidationSample.css'
+
+class ValidationSample extends Component {
+    state = {
+        password: '',
+        clicked: false,
+        validated: false
+    }
+
+    handleChange = (e) => {
+        this.setState({
+            password: e.target.value
+        })
+    }
+
+    handleButtonClick = () => {
+        this.setState({
+            clicked: true,
+            validated: this.state.password === '0000'
+        })
+    }
+
+    render() {
+        return (
+            <div>
+                <input
+                    type="password"
+                    value={this.state.password}
+                    onChange={this.handleChange}
+                    className={this.state.clicked ? (this.state.validated ? 'success' : 'failure') : ''}
+                />
+                <button onClick={this.handleButtonClick}>검증하기</button>
+            </div>
+        )
+    }
+}
+
+export default ValidationSample;
+
+
+//App.js
+import React, { Component } from 'react'
+import ValidationSample from './ValidationSample'
+
+class App extends Component {
+    render() {
+        return (
+            <ValidationSample />
+        )
+    }
+}
+
+export default App;
+
+
+--------------------------- ref 사용 ---------------------------
+특정 input에 포커스 주기
+스크롤 박스 조작하기
+Canvas 요소에 그림 그리기 등은 state만으로 해결할 수 없다
+
+ref를 만드는 가장 기본적인 방법은 콜백 함수를 사용하는 것이다
+ref를 달고자 하는 요소에 ref라는 콜백 함수를 props로 전달
+이 콜백 함수는 ref 값을 파라미터로 전달받는다
+함수 내부에서 파라미터로 받은 ref를 컴포넌트의 멤버 변수로 설정해 준다
+
+예시
+this.input은 input 요소의 DOM을 가르키게 된다
+DOM 타입과 관계없이 this.superman = ref 처럼 마음대로 지정 가능하다
+<input ref={(ref) => {this.input=ref}} />
+<input ref(props 전달)={(ref(ref값을 파리미터로 받는다))(콜백함수 전달) => {this.input=ref (this로 멤버 변수로 설정)}} />
+
+
+--------------------------- createRef 사용 ---------------------------
+리액트 16.3 버전부터 createRef를 사용해서 더 간결하게 만들수 있다
+
+//RefSample.js
+import React, { Component } from 'react'
+
+class RefSample extends Component {
+    //React.createRef()를 사용해 멤버 변수에 할당
+    input = React.createRef()
+
+    handleFocus = () => {
+        //설정한 ref에 접근하려면 this.ref명.current 로 접근하면 된다
+        this.input.current.focus();
+    }
+
+    render() {
+        return (
+            <div>
+                // ref를 달고자 하는 요소에 ref props로 전달
+                <input ref={this.input} />
+            </div>
+        )
+    }
+}
+
+
+--------------------------- 클래스형 컴포넌트에서 ref 사용 ---------------------------
+
+//ValidationSample.js
+import React, { Component } from 'react'
+import './ValidationSample.css'
+
+class ValidationSample extends Component {
+    state = {
+        password: '',
+        clicked: false,
+        validated: false
+    }
+
+    handleChange = (e) => {
+        this.setState({
+            password: e.target.value
+        })
+    }
+
+    handleButtonClick = () => {
+        this.setState({
+            clicked: true,
+            validated: this.state.password === '0000'
+        })
+
+        //포커스 효과 추가
+        this.input.focus()
+    }
+
+    render() {
+        return (
+            <div>
+                <input
+                    //콜백 함수 형식으로 ref 사용
+                    ref={(ref) => this.input=ref}
+                    type="password"
+                    value={this.state.password}
+                    onChange={this.handleChange}
+                    className={this.state.clicked ? (this.state.validated ? 'success' : 'failure') : ''}
+                />
+                <button onClick={this.handleButtonClick}>검증하기</button>
+            </div>
+        )
+    }
+}
+
+export default ValidationSample;
+
+
+--------------------------- 컴포넌트에 ref 달기 ---------------------------
+이 방법은 주로 컴포넌트 내부에 있는 DOM을 컴포넌트 외부에서 사용할 때 쓴다
+
+MyComponent 내부의 메서드 및 멤버 변수에 접근 가능
+내부의 ref에도 접근 가능 (MyComponent.input 등)
+<MyComponent ref={(ref) => {this.MyComponent=ref}} />
+
+
+//ScrollBox.js
+import React, { Component } from 'react'
+
+class ScrollBox extends Component {
+    render() {
+        const style = {
+            border: '1px solid black',
+            height: '300px',
+            width: '300px'
+            overflow: 'auto',
+            position: 'relative'
+        }
+
+        const innerStyle = {
+            width: '100%',
+            height: '650px',
+            background: 'linear-gradient(white, black)'
+        }
+
+        return (
+            <div
+                style={style}
+                ref={(ref) => {this.box=ref}}
+            >
+                <div style={innerStyle} />
+
+            </div>
+        )
+    }
+}
+
+export default ScrollBox
+
+//App.js
+import React, { Component } from 'react'
+impoer ScrollBox from './ScrollBox'
+
+class App extends Component {
+    render() {
+        return (
+            <div>
+                <ScrollBox />
+            </div>
+        )
+    }
+}
+
+export default App
+
+
+//ScrollBox.js
+import React, { Component } from 'react'
+
+class ScrollBox extends Component {
+
+    //컴포넌트 스크롤 바를 맨 아래로 내리는 메서드
+    scrollToBottom = () => {
+        //비구조화 할당 문법을 사용
+        //다음과 같은 의미
+        // const scrollHeight = this.box.scrollHeight;
+        // const clientHeight = this.box.clientHeight;
+        const { scrollHeight, clientHeight } = this.box
+        
+        this.box.scrollTop = scrollHeight - clientHeight
+    }
+
+    render() {
+        const style = {
+            border: '1px solid black',
+            height: '300px',
+            width: '300px'
+            overflow: 'auto',
+            position: 'relative'
+        }
+
+        const innerStyle = {
+            width: '100%',
+            height: '650px',
+            background: 'linear-gradient(white, black)'
+        }
+
+        return (
+            <div
+                style={style}
+                ref={(ref) => {this.box=ref}}
+            >
+                <div style={innerStyle} />
+
+            </div>
+        )
+    }
+}
+
+export default ScrollBox
+
+//App.js
+import React, { Component } from 'react'
+impoer ScrollBox from './ScrollBox'
+
+class App extends Component {
+    render() {
+        return (
+            <div>
+                //ref를 달아 컴포넌트 내부의 메서드를 사용 가능하게 만들었다
+                <ScrollBox ref={(ref) => this.scrollBox=ref} />
+                // onClick = {this.scrollBox.scrollToBottom} 형식도 틀린 방법은 아니다
+                // 하지만 컴포넌트가 처음 렌더링 될 시점에는 this.scrollBox 값이 undefined 이므로 오류가 발생한다
+                // 에로우 펑션으로 새로운 함수를 만들고 그 내부에서 메서드를 실행하면 버튼을 누를 때 (이미 한 번 렌더링 된 시점) 
+                // 값을 읽어와서 실행하므로 오류가 발생하지 않는다
+                <button onClick={() => this.scrollBox.scrollToBottom()}>
+                    맨 밑으로
+                </button>
+            </div>
+        )
+    }
+}
+
+export default App
+
+--------------------------- 주의점 ---------------------------
+ref를 사용하지 않고도 원하는 기능을 구현할 수 있는지 반드시 고려한 후에 사용
+서로 다른 컴포넌트끼리 데이터를 교류할 때 ref를 사용한다면 이는 잘못 사용된 것이다
+가능은 하지만 리액트 사상에 어긋난 설계이며 규모가 커질수록 스파게티처럼 구조가 꼬여
+유지보수가 불가능하다
+
+부모 <--> 자식 흐름으로 교류해야 한다
