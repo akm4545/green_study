@@ -1,7 +1,6 @@
 import React from "react";
 import CompanyIntroduceMainOfTop from "./CompanyIntroduceMainOfTop";
 import CompanyIntroduceMainOfMiddle from "./CompanyIntroduceMainOfMiddle";
-import CompanyIntroduceMainOfBottom from "./CompanyIntroduceMainOfBottom";
 
 const mainStyle = {
     width: '800px',
@@ -36,15 +35,7 @@ const CompanyIntroduceMain = () => {
             </div>
 
             <div style={subStyle}>
-                <CompanyIntroduceMainOfMiddle>
-
-                </CompanyIntroduceMainOfMiddle>
-            </div>
-            
-            <div style={subStyle}>
-                <CompanyIntroduceMainOfBottom>
-
-                </CompanyIntroduceMainOfBottom>
+                <CompanyIntroduceMainOfMiddle/>
             </div>
         </div>
     )
