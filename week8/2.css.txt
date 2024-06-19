@@ -1,0 +1,260 @@
+--------------------------- 일반 CSS 방식 ---------------------------
+새로운 기술을 배울 필요가 없거나 소규모 프로젝트를 개발하고 있다면 채용을 고민해봐도 괜찮다
+CSS 작성 시 가장 중요한 것은 CSS 클래스를 중복되지 않게 만드는 것이다
+
+--------------------------- 이름 짓는 규칙 ---------------------------
+App.css를 읽어 보면 클래스 이름이 컴포넌트 이름-클래스 형태로 지어져 있다
+클래스 이름에 컴포넌트 이름을 포함시킴으로써 다른 컴포넌트에서 실수로 중복되는 클래스를 만들어
+사용하는 것을 방지할 수 있다
+
+비슷한 방식으로 BEM 네이밍이라는 방식도 있다
+CSS 방법론 중 하나로 이름을 지을 때 일종의 규칙을 준수하여 해당 클래스가 어디에서 어떤 용도로 사용되는지
+명확하게 작성하는 방식이다 
+ex) .card_title-primary
+
+--------------------------- CSS Selector ---------------------------
+CSS
+.App 안에 들어 있는 .logo
+ex) .App .logo
+
+--------------------------- Sass ---------------------------
+Syntactically Awesome Style Shhets(문법적으로 매우 멋진 스타일시트)의 줄임말
+CSS 전처리기로 복잡한 작업을 쉽게 할 수 있도록 해 주고 스타일 코드의 재활용성을 높여
+줄 뿐만 아니라 코드의 가독성을 높여서 유지 보수를 더욱 쉽게 해 준다
+
+Sass에서는 두 가지 확장자 .scss와 .sass를 지원한다
+
+.sass 문법 
+$font-stack: Helvetica, snas-serif
+$primary-color: #333
+
+body
+    font: 100% $font-stack
+    color: $primary-color
+
+.scss (많이 쓰이는 문법)
+$font-stack: Helvetica, snas-serif;
+$primary-color: #333;
+
+body {
+    font: 100% $font-stack;
+    color: $primary-color;
+}
+
+scss 라이브러리 설치 (sass를 css로 변환)
+yarn add sass
+
+SassComponent.scss
+//변수
+$red: #fa5252;
+$orange: #fd7e14;
+$green: #40c057;
+$blue: #339af0;
+$indifo: #5c7cfa;
+$violet: #7950f2;
+
+// 믹스인 만들기 (재사용되는 스타일 블록을 함수처럼 사용할 수 있음)
+@mixin square($size){
+    $calculated: 32px * $size;
+    width: $calculated;
+    height: $calculated
+}
+
+.SassComponent {
+    display: flex;
+    .box{ // 일반 CSS에서는 .SassComponent .box와 마찬가지
+        background: red;
+        cursor: pointer;
+        trainsition: all 0.3s ease-in;
+        &.red{
+            //.red 클래스가 .box와 함께 사용되었을 때
+            background: &red;
+            @include square(1)
+        }
+        &.orange{
+            background: &orange;
+            @include square(2)
+        }
+        &.yellow{
+            background: &yellow;
+            @include square(3)
+        }
+        &.green{
+            background: &green;
+            @include square(4)
+        }
+        &.blue{
+            background: &blue;
+            @include square(5)
+        }
+        &.indigo{
+            background: &indigo;
+            @include square(6)
+        }
+        &.violet{
+            background: &violet;
+            @include square(7)
+        }
+        &:hover{
+            //.box에 마우스를 올렸을 때
+            background: black;
+        }
+    }
+}
+
+SassComponent.js
+import './SassComponent.scss;
+
+const SassComponent = () => {
+    return (
+        <div className="SassComponent">
+            <div className"box red" />
+            <div className"box orange" />
+            <div className"box yellow" />
+            <div className"box green" />
+            <div className"box blue" />
+            <div className"box indigo" />
+            <div className"box violet" />
+        </div>
+    )
+}
+
+export default SassComponent
+
+서버 재기동 해야 반영
+App.js
+import React, { Component } from 'react'
+import SassComponent from './SassComponent'
+
+class App extends Component {
+    render() {
+        return (
+            <div>
+                <SassComponent />
+            </div>
+        )
+    }
+}
+
+export default App
+
+--------------------------- utils 함수 분리 ---------------------------
+여러 파일에서 사용될 수 있는 Sass 변수 및 믹스인은 다른 파일로 분리하여 
+여러 파일에서 불러와 사용 가능
+
+src/styles/utils.css
+$red: #fa5252;
+$orange: #fd7e14;
+$green: #40c057;
+$blue: #339af0;
+$indifo: #5c7cfa;
+$violet: #7950f2;
+
+@mixin square($size){
+    $calculated: 32px * $size;
+    width: $calculated;
+    height: $calculated
+}
+
+src/styles/SassComponent.sass
+@import './styles/utils;
+.SassComponent {
+    display: flex;
+    .box{ // 일반 CSS에서는 .SassComponent .box와 마찬가지
+        background: red;
+        cursor: pointer;
+        trainsition: all 0.3s ease-in;
+        &.red{
+            //.red 클래스가 .box와 함께 사용되었을 때
+            background: &red;
+            @include square(1)
+        }
+        &.orange{
+            background: &orange;
+            @include square(2)
+        }
+        &.yellow{
+            background: &yellow;
+            @include square(3)
+        }
+        &.green{
+            background: &green;
+            @include square(4)
+        }
+        &.blue{
+            background: &blue;
+            @include square(5)
+        }
+        &.indigo{
+            background: &indigo;
+            @include square(6)
+        }
+        &.violet{
+            background: &violet;
+            @include square(7)
+        }
+        &:hover{
+            //.box에 마우스를 올렸을 때
+            background: black;
+        }
+    }
+}
+
+
+
+--------------------------- CSS Module ---------------------------
+CSS를 불러와서 사용할 때 클래스 이름을 고유한 값
+[파일이름]_[클래스 이름]_[해시값] 형태로 자동으로 만들어서 컴포넌트의 스타일 클래스 이름이
+중첩되는 현상을 방지해 주는 기술 
+.module.css 확장자로 파일을 저장하기만 하면 CSS Module이 적용
+클래스 이름의 고유성에 대해서 고민하지 않아도 된다
+해당 클래스는 스타일을 직접 불러온 컴포넌트 내부에서만 작동
+Sass도 CSSModule.module.scss로 사용하면 적용 가능
+
+CSSModule.module.css
+.wrapper {
+    background: black;
+    padding: 1rem;
+    color: white;
+    font-size: 2rem;
+}
+
+.inverted {
+    color: black;
+    background: white;
+    border: 1px solid black;
+}
+
+// 글로벌 CSS 작성
+:global .something {
+    font-weight: 800;
+    color: aqua;
+}
+
+CSSModule.js
+import styles from './CSSModule.module.css
+
+const CSSModule = () => {
+    return (
+        //클래스를 적용하고 싶은 JSX 엘리먼트에 {styles.[클래스 이름]} 형태로 전달
+        //:global은 평범하게 사용한다
+        <div className={styles.wrapper}>
+        //두 개 사용시 리터럴 문자로 처리
+        <div className={`${styles.wrapper} ${styles.inverted}`}
+            안녕하세요, 저는 <span className="something">CSS Module</span>
+        </div>
+    )
+}
+
+export default CSSModule
+
+
+--------------------------- styled-components ---------------------------
+컴포넌트 스타일링의 또 다른 패러다임은 자바스크립트 파일 안에 스타일은 선언하는 방식
+이 방식을 CSS-in-JS 라고 부른다
+
+CSS-in-JS 라이브러리 중에서 개발자들이 가장 선호하는 라이브러리는 styled-components 
+
+설치
+yarn add styled-components
+
