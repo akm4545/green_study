@@ -65,7 +65,7 @@ $violet: #7950f2;
     .box{ // 일반 CSS에서는 .SassComponent .box와 마찬가지
         background: red;
         cursor: pointer;
-        trainsition: all 0.3s ease-in;
+        transition: all 0.3s ease-in;
         &.red{
             //.red 클래스가 .box와 함께 사용되었을 때
             background: &red;
@@ -163,7 +163,7 @@ src/styles/SassComponent.sass
     .box{ // 일반 CSS에서는 .SassComponent .box와 마찬가지
         background: red;
         cursor: pointer;
-        trainsition: all 0.3s ease-in;
+        transition: all 0.3s ease-in;
         &.red{
             //.red 클래스가 .box와 함께 사용되었을 때
             background: &red;
