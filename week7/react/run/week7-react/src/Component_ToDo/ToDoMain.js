@@ -12,7 +12,7 @@ const ToDoMain = () => {
 
     const onChange = e => {
         const nextInputForm = {
-            ...inputForm,
+            ...inputForm,//스프레드 연산자 ...
             [e.target.name] : e.target.value
         }
         setInputForm(nextInputForm);
