@@ -1,0 +1,471 @@
+--------------------------- todos state ---------------------------
+App.js
+//추가
+import { useState } from 'react'
+
+import TodoTemplate from './components/TodoTemplate
+import TodoInsert from './components/TodoInsert
+import TodoList from './components/TodoList;
+
+const App = () => {
+    //추가
+    const [todos, setTodos] = useState([
+        {
+            id: 1,
+            text: '리액트의 기초 알아보기',
+            checked: true,
+        },
+        {
+            id: 2,
+            text: '컴포넌트 스타일링해 보기',
+            checked: true,
+        },
+        {
+            id: 1,
+            text: '일정 관리 앱 만들어 보기',
+            checked: false,
+        },
+    ])
+
+    return (
+        <TodoTemplate>
+            <TodoInsert />
+            //추가
+            <TodoList todos={todos} />
+        </TodoTemplate>
+    )
+}
+
+export default App;
+
+TodoList.js
+import TodoListItme from './TodoListItme'
+import './TodoList.scss'
+
+//추가
+const TodoList = ({ todos }) => {
+    return (
+        <div className="TodoList">
+            //추가
+            {todos.map(todo => (
+                <TodoListItem todo={todo} key={todo.id} />
+            ))}
+        </div>
+    )
+}
+
+TodoListItem.js
+import {
+    MdCheckBoxOutlineBlank,
+    MdCheckBox,
+    MdRemoveCircleOutline,
+} from 'react-icons/md'
+//추가
+import cn from 'classname'
+import './TodoListItme.scss'
+
+//추가
+const TodoListItme = ({ todo }) => {
+    //추가
+    const { text, checked } = todo;
+
+    return (
+        <div className="TodoListItme">
+            //추가 (아래 전부 변경)
+            <div className={cn('checkbox', { checked })}>
+                {checked ? <MdCheckBox /> : <MdCheckBoxOutlineBlank />}
+                <div className="text">{text}</div>
+            </div>
+            <div className="remove">
+                <MdRemoveCircleOutline />
+            </div>
+        </div>
+    )
+}
+
+--------------------------- 항목 추가 기능 ---------------------------
+TodoInsert.js
+//추가
+import { useState, useCallback } from 'react'
+import { MdAdd } from 'react-icons/md'
+import './TodoInsert.scss'
+
+const TodoInsert = () => {
+    //추가
+    const [value, setValue] = useState('')
+
+    //추가
+    const onChange = useCallback(e => {
+        setValue(e.target.value);
+    }, [])
+
+    return (
+        <form className="TodoInsert">
+            //추가
+            <input 
+                placeholder="할 일을 입력하세요" 
+                value={value}
+                onChange={onChange}
+            />
+            <button type="submit">
+                <MdAdd />
+            </button>
+        </form>
+    )
+}
+
+export default TodoInsert
+
+
+--------------------------- 리액트 개발자 도구 ---------------------------
+https://chrome.google.com/webstore/category/extensions
+
+React Developer Tools 설치
+
+개발자 도구 탭에 Components 클릭 
+
+좌측 TodoInsert를 선택하면 인풋 수정시 값 확인 가능
+
+
+--------------------------- 항목 추가 기능 ---------------------------
+App.js
+//추가
+import { useState, useRef, useCallback } from 'react'
+
+import TodoTemplate from './components/TodoTemplate
+import TodoInsert from './components/TodoInsert
+import TodoList from './components/TodoList;
+
+const App = () => {    
+    const [todos, setTodos] = useState([
+        {
+            id: 1,
+            text: '리액트의 기초 알아보기',
+            checked: true,
+        },
+        {
+            id: 2,
+            text: '컴포넌트 스타일링해 보기',
+            checked: true,
+        },
+        {
+            id: 1,
+            text: '일정 관리 앱 만들어 보기',
+            checked: false,
+        },
+    ])
+
+    // 추가
+    // 고윳값 id
+    const nextId = useRef(4);
+
+    //추가
+    const onInsert = useCallback(
+        text => {
+            const todo = {
+                id: nextId.current,
+                text,
+                checked: false,
+            };
+
+            setTodos(todos.concat(todo))
+            nextId.current += 1;
+        },
+        [todos],
+    )
+
+    return (
+        <TodoTemplate>
+            //추가
+            <TodoInsert onInsert={onInsert} />
+            <TodoList todos={todos} />
+        </TodoTemplate>
+    )
+}
+
+export default App;
+
+TodoInsert.js
+import { useState, useCallback } from 'react'
+import { MdAdd } from 'react-icons/md'
+import './TodoInsert.scss'
+
+//추가
+const TodoInsert = ({ onInsert }) => {
+    const [value, setValue] = useState('')
+
+    const onChange = useCallback(e => {
+        setValue(e.target.value);
+    }, [])
+
+    //추가
+    const onSubmit = useCallback(
+        e => {
+            onInsert(value)
+            setValue('')
+
+            e.preventDefault()
+        },
+        [onInsert, value]
+    )
+
+    return (
+        //추가
+        <form className="TodoInsert" onSubmit={onSubmit}>
+            <input 
+                placeholder="할 일을 입력하세요" 
+                value={value}
+                onChange={onChange}
+            />
+            <button type="submit">
+                <MdAdd />
+            </button>
+        </form>
+    )
+}
+
+export default TodoInsert
+
+
+--------------------------- 항목 지우기 기능 ---------------------------
+App.js
+import { useState, useRef, useCallback } from 'react'
+import TodoTemplate from './components/TodoTemplate
+import TodoInsert from './components/TodoInsert
+import TodoList from './components/TodoList;
+
+const App = () => {    
+    const [todos, setTodos] = useState([
+        {
+            id: 1,
+            text: '리액트의 기초 알아보기',
+            checked: true,
+        },
+        {
+            id: 2,
+            text: '컴포넌트 스타일링해 보기',
+            checked: true,
+        },
+        {
+            id: 1,
+            text: '일정 관리 앱 만들어 보기',
+            checked: false,
+        },
+    ])
+
+    const nextId = useRef(4);
+
+    const onInsert = useCallback(
+        text => {
+            const todo = {
+                id: nextId.current,
+                text,
+                checked: false,
+            };
+
+            setTodos(todos.concat(todo))
+            nextId.current += 1;
+        },
+        [todos],
+    )
+
+    //추가
+    const onRemove = useCallback(
+        id => {
+            setTodos(todos.filter(todo => todo.id !== id))
+        },
+        [todos],
+    )
+
+    return (
+        <TodoTemplate>
+            <TodoInsert onInsert={onInsert} />
+            //추가
+            <TodoList todos={todos} onRemove={onRemove}/>
+        </TodoTemplate>
+    )
+}
+
+export default App;
+
+TodoList.js
+import TodoListItme from './TodoListItme'
+import './TodoList.scss'
+
+//추가
+const TodoList = ({ todos, onRemove }) => {
+    return (
+        <div className="TodoList">
+            //추가
+            {todos.map(todo => (
+                <TodoListItem 
+                    todo={todo} 
+                    key={todo.id} 
+                    onRemove={onRemove}
+                />
+            ))}
+        </div>
+    )
+}
+
+
+TodoListItem.js
+import {
+    MdCheckBoxOutlineBlank,
+    MdCheckBox,
+    MdRemoveCircleOutline,
+} from 'react-icons/md'
+import cn from 'classname'
+import './TodoListItme.scss'
+
+//추가
+const TodoListItme = ({ todo, onRemove }) => {
+    //추가
+    const { id, text, checked } = todo;
+
+    return (
+        <div className="TodoListItme">
+            <div className={cn('checkbox', { checked })}>
+                {checked ? <MdCheckBox /> : <MdCheckBoxOutlineBlank />}
+                <div className="text">{text}</div>
+            </div>
+            //추가
+            <div className="remove" onClick={() => onRemove(id)}>
+                <MdRemoveCircleOutline />
+            </div>
+        </div>
+    )
+}
+
+export default TodoListItem;
+
+
+--------------------------- 항목 수정 기능 ---------------------------
+App.js
+import { useState, useRef, useCallback } from 'react'
+import TodoTemplate from './components/TodoTemplate
+import TodoInsert from './components/TodoInsert
+import TodoList from './components/TodoList;
+
+const App = () => {    
+    const [todos, setTodos] = useState([
+        {
+            id: 1,
+            text: '리액트의 기초 알아보기',
+            checked: true,
+        },
+        {
+            id: 2,
+            text: '컴포넌트 스타일링해 보기',
+            checked: true,
+        },
+        {
+            id: 1,
+            text: '일정 관리 앱 만들어 보기',
+            checked: false,
+        },
+    ])
+
+    const nextId = useRef(4);
+
+    const onInsert = useCallback(
+        text => {
+            const todo = {
+                id: nextId.current,
+                text,
+                checked: false,
+            };
+
+            setTodos(todos.concat(todo))
+            nextId.current += 1;
+        },
+        [todos],
+    )
+
+    const onRemove = useCallback(
+        id => {
+            setTodos(todos.filter(todo => todo.id !== id))
+        },
+        [todos],
+    )
+
+    //추가
+    const onToggle = useCallback(
+        id => {
+            setTodos(
+                todos.map(todo => 
+                    todo.id === id ? { ...todo, checked: !todo.checked} : todo
+                ),
+            )
+        },
+        [todos]
+    )
+
+    return (
+        <TodoTemplate>
+            <TodoInsert onInsert={onInsert} />
+            //추가
+            <TodoList todos={todos} onRemove={onRemove} onToggle={onToggle}/>
+        </TodoTemplate>
+    )
+}
+
+export default App;
+
+
+TodoList.js
+import TodoListItme from './TodoListItme'
+import './TodoList.scss'
+
+//추가
+const TodoList = ({ todos, onRemove, onToggle }) => {
+    return (
+        <div className="TodoList">
+            //추가
+            {todos.map(todo => (
+                <TodoListItem 
+                    todo={todo} 
+                    key={todo.id} 
+                    onRemove={onRemove}
+                    onToggle={onToggle}
+                />
+            ))}
+        </div>
+    )
+}
+
+export default TodoList
+
+
+TodoListItem.js
+import {
+    MdCheckBoxOutlineBlank,
+    MdCheckBox,
+    MdRemoveCircleOutline,
+} from 'react-icons/md'
+import cn from 'classname'
+import './TodoListItme.scss'
+
+//추가
+const TodoListItme = ({ todo, onRemove, onToggle }) => {
+    const { id, text, checked } = todo;
+
+    return (
+        <div className="TodoListItme">
+            //추가
+            <div 
+                className={cn('checkbox', { checked })}
+                onClick={() => onToggle(id)}
+            >
+                {checked ? <MdCheckBox /> : <MdCheckBoxOutlineBlank />}
+                <div className="text">{text}</div>
+            </div>
+            //추가
+            <div className="remove" onClick={() => onRemove(id)}>
+                <MdRemoveCircleOutline />
+            </div>
+        </div>
+    )
+}
+
+export default TodoListItem;
