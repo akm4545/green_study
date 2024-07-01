@@ -1,0 +1,417 @@
+--------------------------- 라우팅 ---------------------------
+사용자가 요청한 URL에 따라 알맞은 페이지를 보여주는 것을 의미
+
+라우트 시스템 구축 선택지는 크게 2가지가 있다
+
+리액트 라우터(React Router): 가장 오래됐고 가장 많이 사용한다
+컴포넌트 기반으로 라우팅 시스템을 설정할 수 있다
+
+Next.js: 리액트 프로젝트의 프레임워크
+리액트 프로젝트 설정, 라우팅 시스템, 최적화, 다국어 시스템 지원, 서버사이드 렌더링 등 다양한 기능 제공
+파일 경로 기반으로 작동
+
+--------------------------- 멀티 페이지 애플리케이션 ---------------------------
+사용자가 다다른 페이지로 이동할 때마다 새로운 html을 받아오고 페이지를 로딩할 때마다
+서버에서 CSS, JS, 이미지 파일 등의 리소스를 전달받아 렌더링
+
+사용자 인터랙션이 별로 없는 정적인 페이지들은 기존의 방식이 적합하지만 사용자 인터렉션이 많고
+다양한 정보를 제공하는 모던 웹 애플리케이션은 이 방식이 적합하지 않다
+
+새로운 페이지를 보여줘야 할 때마다 서버 측에서 모든 준비를 한다면 그만큼 서버의 자원을 사용하고
+트래픽도 더 많이 나올 수 있다
+
+--------------------------- 싱글 페이지 애플리케이션 ---------------------------
+뷰 렌더링을 사용자의 브라우저가 담당하도록 하고 우선 웹 애플리케이션을 브라우저에 불러와서
+실행시킨 후에 사용자와의 인터렉션이 발생하면 필요한 부분만 자바스크립트를 사용하여 업데이트
+
+새로운 데이터가 필요하면 서버 API를 호출하여 필요한 데이터만 새로 불러와 사용
+
+이렇게 html은 한번만 받아와서 웹 애플리케이션을 실행시킨 후 이후에 필요한 데이터만 받아와서
+화면에 업데이트하는 것이 싱글 페이지 애플리케이션이다
+
+싱글 페이지 애플리케이션은 기술적으로는 한 페이지만 존재하지만 사용자가 경험하기에는 여러 페이지가
+존재하는 것처럼 느낄 수 있다
+
+
+--------------------------- 리엑트 라우터 사용 ---------------------------
+npm install react-router-dom
+
+프로젝트에 라우터 적용
+src/index.js
+import React from 'react'
+import ReactDOM from 'react-dom'
+import './index.css'
+import App from './App'
+import { BrowserRouter } from 'react-router-dom'
+
+ReactDOM.render(
+    //웹 애플리케이션에 HTML5의 History API를 사용하여 페이지를 새로 불러오지 않고도 주소를 변경하고
+    //주소의 경로에 관련된 정보를 리액트 컴포넌트에서 사용할 수 있도록 해준다
+    <BrowserRouter>
+        <App />
+    </BrowserRouter>,
+    document.getElementById('root')
+)
+
+src/pages/Home.js
+const Home = () => {
+    return (
+        <div>
+            <h1>홈</h1>
+            <p>가장 먼저 보여지는 페이지입니다.</p>
+        </div>
+    )
+}
+
+export default Home
+
+src/pages/About.js
+const About = () => {
+    return (
+        <div>
+            <h1>소개</h1>
+            <p>리액트 라우터를 사용해 보는 프로젝트입니다.</p>
+        </div>
+    )
+}
+
+export default About
+
+Router 컴포넌트 사용법
+<Route path="주소 규칙" element={보여줄 컴포넌트 JSX} />
+
+src/App.js
+import { Route, Routes } from 'react-router-dom'
+import About from './pages/About'
+import Home from './pages/Home'
+
+const App = () => {
+    return (
+        <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/About" element={<About />} />
+        </Routes>
+    )
+}
+
+export default App
+
+--------------------------- Link 컴포넌트를 사용하여 다른 페이지로 이동하는 링크 보여주기 ---------------------------
+a 태그를 사용하면 페이지를 이동할 때 브라우저에서는 페이지를 새로 불러온다
+Link 컴포넌트 역시 a 태그를 사용하긴 하지만 페이지를 새로 불러오는 것을 막고 History API를 통해
+브라우저 주소의 경로만 바꾸는 기능이 내장되어 있다
+
+Link 사용 예
+<Link to="경로">링크 이름</Link>
+
+src/pages/Home.js
+import { Link } from 'react-router-dom'
+
+const Home = () => {
+    return (
+        <div>
+            <h1>홈</h1>
+            <p>가장 먼저 보여지는 페이지입니다.</p>
+            <Link to="/about">소개<Link>
+        </div>
+    )
+}
+
+export default Home
+
+
+--------------------------- URL 파라미터와 쿼리 스트링 ---------------------------
+URL 파라미터 예시: /profile/velopert
+주소의 경로에 유동적인 값을 넣는다
+ID 또는 이름을 사용하여 특정 데이터 조회 용도로 사용
+
+쿼리스트링 예시: /articles?page=1&keyword=react
+주소의 뒷부분에 ? 문자열 이후에 key=value로 값을 정의하며 &로 구분한다
+키워드 검색, 페이지네이션, 정렬 방식 등 데이터 조회 옵션을 전달할 때 사용
+
+src/pages/Profile.js
+import { useParams } from 'react-router-dom'
+
+const data = {
+    velopert: {
+        name: '김민준',
+        description: '리액트를 좋아하는 개발자'
+    },
+    gildong: {
+        name: '홍길동',
+        description: '고전 소설 홍길동전의 주인공'
+    }
+}
+
+const Profile = () => {
+    //useParams Hook으로 URL 파라미터를 객체 형태로 조회
+    //URL 파라미터의 이름은 라우트 설정 시 Route 컴포넌트의 path props를 통해 설정
+    const params = useParams()
+    const profile = data[params.username]
+
+    return (
+        <div>
+            <h1>사용자 프로필</h1>
+            {profile ? (
+                <div>
+                    <h2>{profile.name}</h2>
+                    <p>{profile.description}</p>
+                </div>
+            ) : (
+                <p>존재하지 않는 프로필입니다.</p>
+            )}
+        </div>
+    )
+}
+
+export default Profile
+
+src/App.js
+import { Route, Routes } from 'react-router-dom'
+import About from './pages/About'
+import Home from './pages/Home'
+import Profile from './pages/Profile'
+
+const App = () => {
+    return (
+        <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/About" element={<About />} />
+            <Route path="/profiles/:username" element={<Profile />} />
+        </Routes>
+    )
+}
+
+export default App
+
+src/pages/Home.js
+import { Link } from 'react-router-dom'
+
+const Home = () => {
+    return (
+        <div>
+            <h1>홈</h1>
+            <p>가장 먼저 보여지는 페이지입니다.</p>
+            <ul>
+                <li>
+                    <Link to="/about">소개<Link>
+                </li>
+                <li>
+                    <Link to="/profiles/velopert">velopert의 프로필<Link>
+                </li>
+                <li>
+                    <Link to="/profiles/velopert">gildong의 프로필<Link>
+                </li>
+                <li>
+                    <Link to="/profiles/void">존재하지 않는 프로필<Link>
+                </li>
+            </ul>
+        </div>
+    )
+}
+
+export default Home
+
+쿼리스트링 사용
+src/pages/About.js
+import { useLocation } from 'react-router-dom'
+
+const About = () => {
+    const location = useLocation()
+    //들어있는 값들
+    //pathname: 현재 주소의 경로(쿼리스트링 제외)
+    //search: 맨 앞의 ? 문자를 포함한 쿼리스트링 값
+    //hash: 주소의 #묹열 뒤의 값 (주로 History API가 지원되지 않는 구형 브라우저에서 클라이언트 라우팅을 사용할 때 쓰는 해시 라우터에서 사용)
+    //state: 페이지로 이동할 때 임의로 넣을 수 있는 상태 값
+    //key: location 객체의 고유값 페이지가 변경될 때마다 고유의 값을 생성
+
+    return (
+        <div>
+            <h1>소개</h1>
+            <p>리액트 라우터를 사용해 보는 프로젝트입니다.</p>
+            <p>쿼리스트링: {location.search}</p>
+        </div>
+    )
+}
+
+export default About
+
+요청 
+http://localhost:3000/about?detail=true&mode=1
+
+쿼리스트링 쉽게 파싱 (키, 벨류 분리 / &를 기준으로 분리)
+src/pages/About.js
+import { useSearchParams } from 'react-router-dom'
+
+const About = () => {
+    //useSearchParams
+    //반환 첫번째 원소 = 쿼리파라미터를 조회하거나 수정하는 메서드들이 담긴 객체
+    //반환 두번째 원소 = 쿼리파라미터를 객체 형태로 업데이트 할 수 있는 함수 반환
+    const [searchParams, setSearchParams] = useSearchParams()
+    //get으로 특정 쿼리파라미터 조회
+    //set으로 업에디트
+    //조회시 무조건 문자열 타입으로 조회해야 한다
+    const detail = searchParams.get('detail')
+    const mode = searchParams.get('mode')
+
+    const onToggleDetail = () => {
+        setSearchParams({ mode, detail: detail === 'true' ? false : true})
+    }
+
+    const onIncreaseMode = () => {
+        const nextMode = mode === null ? 1 : parseInt(mode) + 1
+        setSearchParams({ mode: nextMode, detail })
+    }
+
+    return (
+        <div>
+            <h1>소개</h1>
+            <p>리액트 라우터를 사용해 보는 프로젝트입니다.</p>
+            <p>detail: {detail}</p>
+            <p>mode: {mode}</p>
+            <button onClick={onToggleDetail}>Toggle detail</button>
+            <button onClick={onIncreaseMode}>mode + 1</button>
+        </div>
+    )
+}
+
+export default About
+
+--------------------------- 중첩된 라우트 ---------------------------
+src/pages/Articles.js
+import { Link } from 'react-router-dom'
+
+const Articles = () => {
+    return (
+        <ul>
+            <li>
+                <Link to="/article/1">게시글 1</Link>
+            </li>
+            <li>
+                <Link to="/article/2">게시글 2</Link>
+            </li>
+            <li>
+                <Link to="/article/3">게시글 3</Link>
+            </li>
+        </ul>
+    )
+}
+
+export default Articles
+
+src/pages/Article.js
+import { useParams } from 'react-router-dom'
+
+const Article = () => {
+    const { id } = useParams()
+
+    return (
+        <div>
+            <h2>게시글 {id}</h2>
+        </div>
+    )
+}
+
+export default Article
+
+src/App.js
+import { Route, Routes } from 'react-router-dom'
+import About from './pages/About'
+import Home from './pages/Home'
+import Profile from './pages/Profile'
+import Article from './pages/Article'
+import Articles from './pages/Articles'
+
+const App = () => {
+    return (
+        <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/About" element={<About />} />
+            <Route path="/profiles/:username" element={<Profile />} />
+            <Route path="/articles" element={<Articles />} />
+            <Route path="/articles/:id" element={<Article />} />
+        </Routes>
+    )
+}
+
+export default App
+
+src/pages/Home.js
+import { Link } from 'react-router-dom'
+
+const Home = () => {
+    return (
+        <div>
+            <h1>홈</h1>
+            <p>가장 먼저 보여지는 페이지입니다.</p>
+            <ul>
+                <li>
+                    <Link to="/about">소개<Link>
+                </li>
+                <li>
+                    <Link to="/profiles/velopert">velopert의 프로필<Link>
+                </li>
+                <li>
+                    <Link to="/profiles/velopert">gildong의 프로필<Link>
+                </li>
+                <li>
+                    <Link to="/profiles/void">존재하지 않는 프로필<Link>
+                </li>
+                <li>
+                    <Link to="/articles">게시글 목록<Link>
+                </li>
+            </ul>
+        </div>
+    )
+}
+
+export default Home
+
+src/App.js
+import { Route, Routes } from 'react-router-dom'
+import About from './pages/About'
+import Home from './pages/Home'
+import Profile from './pages/Profile'
+import Article from './pages/Article'
+import Articles from './pages/Articles'
+
+const App = () => {
+    return (
+        <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/About" element={<About />} />
+            <Route path="/profiles/:username" element={<Profile />} />
+            <Route path="/articles" element={<Articles />}>
+                <Route path=":id" element={<Article />} />
+            </Route>
+        </Routes>
+    )
+}
+
+export default App
+
+src/pages/Articles.js
+//리액트 라우터에서 제공하는 Outlet 컴포넌트를 사용해줘야 한다
+//이 컴포넌트는 Route의 children으로 들어가는 JSX 엘리먼트를 보여주는 역할을 한다
+import { Link, Outlet } from 'react-router-dom'
+
+const Articles = () => {
+    return (
+        <div>
+            <Outlet />
+            <ul>
+                <li>
+                    <Link to="/article/1">게시글 1</Link>
+                </li>
+                <li>
+                    <Link to="/article/2">게시글 2</Link>
+                </li>
+                <li>
+                    <Link to="/article/3">게시글 3</Link>
+                </li>
+            </ul>
+        </div>
+    )
+}
+
+export default Articles
