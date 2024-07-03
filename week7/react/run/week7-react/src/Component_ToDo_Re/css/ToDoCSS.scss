@@ -1,0 +1,37 @@
+.ToDoMain {
+    width: 500px;
+    border: solid 1px blue;
+    margin: 20px;
+}
+
+.ToDoList {
+    border: solid 1px red;
+    margin: 10px;
+    height: 200px;
+    overflow: scroll;
+}
+
+.ToDoInsert {
+    border:solid 1px green;
+    margin:10px;
+    padding:10px;
+
+    .ToDoInsertDiv{
+        margin-bottom: 10px;
+
+        input {
+            width: 70%;
+        }
+
+        button {
+            width: 20%;
+            background-color: lightgreen;
+        }
+    }
+
+    .ToDoTextAreaDiv {
+        textarea {
+            width: 100%;
+        }
+    }
+}

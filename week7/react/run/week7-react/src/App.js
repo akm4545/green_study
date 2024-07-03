@@ -6,6 +6,7 @@ import IterationSample02 from "./Component/IterationSample02";
 import LifeCycleSample from "./Component/LifeCycleSample";
 import ErrorBoudary from "./Component/ErrorBoudary";
 import ToDoMain from "./Component_ToDo/ToDoMain";
+import ToDoMain2 from "./Component_ToDo_Re/ToDoMain";
 
 function getRandomColor(){
   return '#' + Math.floor(Math.random() * 16777215).toString(16)
@@ -55,7 +56,8 @@ class App extends Component {
 
       //=================================================5
       <>
-        <ToDoMain/>
+        {/* <ToDoMain/> */}
+        <ToDoMain2/>
       </>
     )
   }

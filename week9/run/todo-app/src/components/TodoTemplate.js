@@ -2,6 +2,7 @@ import React from "react"
 import './TodoTemplate.scss'
 
 const TodoTemplate = ({children}) => {
+    console.log(children);
     return (
         <div className="TodoTemplate">
             <div className="app-title">일정관리</div>
