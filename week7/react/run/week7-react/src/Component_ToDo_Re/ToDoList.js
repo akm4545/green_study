@@ -1,10 +1,20 @@
 import React from "react";
-import "./css/ToDoCSS.scss"
+import "./css/ToDoCSS.scss";
+import ToDoListItem from "./ToDoListItem";
 
-const ToDoList = () => {
+const ToDoList = ({list}) => {
     return (
-        <div className="ToDoList"></div>
+        <div className="ToDoList">
+            {
+                list.map(item => (
+                    <ToDoListItem 
+                        key={item.id}
+                        item={item}
+                    />
+                ))
+            }    
+        </div>
     );
 }
 
-export default ToDoList;
+export default React.memo(ToDoList);
