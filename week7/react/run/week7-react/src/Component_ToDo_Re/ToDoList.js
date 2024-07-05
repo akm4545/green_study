@@ -2,7 +2,7 @@ import React from "react";
 import "./css/ToDoCSS.scss";
 import ToDoListItem from "./ToDoListItem";
 
-const ToDoList = ({list}) => {
+const ToDoList = ({list, onDblclick, onDelete, onUpdateForm, onUpdate}) => {
     return (
         <div className="ToDoList">
             {
@@ -10,6 +10,10 @@ const ToDoList = ({list}) => {
                     <ToDoListItem 
                         key={item.id}
                         item={item}
+                        onDblclick={onDblclick}
+                        onDelete={onDelete}
+                        onUpdateForm={onUpdateForm}
+                        onUpdate={onUpdate}
                     />
                 ))
             }    

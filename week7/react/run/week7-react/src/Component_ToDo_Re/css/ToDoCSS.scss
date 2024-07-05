@@ -35,3 +35,26 @@
         }
     }
 }
+
+.ToDoListItem {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid;
+    cursor: pointer;
+
+    input, textarea {
+        width: 100%;
+    }
+
+    .updateButton {
+        background-color: blue;
+        color: white;
+        float: right;
+    }
+
+    .deleteButton {
+        background-color: red;
+        color: white;
+        float: right;
+    }
+}

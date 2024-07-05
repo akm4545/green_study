@@ -11,7 +11,7 @@ function createBulkTodos() {
     array.push({
       id: i,
       text: `할 일 ${i}`,
-      checkd: false,
+      checked: false,
     });
   }
   return array;
