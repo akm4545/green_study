@@ -27,7 +27,7 @@ function reducer(list, action){
                                         ...item, 
                                         updateFormFlag: !item.updateFormFlag,
                                         title: action.title,
-                                        content: action.content 
+                                        content: action.content
                                     } : item);
     }
     if(action.type === 'DELETE'){
@@ -41,6 +41,11 @@ function reducer(list, action){
 const ToDoMain = () => {
     
     const [list, dispatch] = useReducer(reducer, undefined, createList);
+
+    // 2024 07 07 useMemo 추가해봄 (최적화???)
+    const memoList = useMemo(() => {
+        return list;
+    }, [list]);
 
     const idx = useRef(1);
 
@@ -86,7 +91,7 @@ const ToDoMain = () => {
     return (
         <div className="ToDoMain">
             <ToDoList 
-                list={list} 
+                list={memoList} 
                 onDblclick={onDblclick} 
                 onDelete={onDelete} 
                 onUpdateForm={onUpdateForm}
