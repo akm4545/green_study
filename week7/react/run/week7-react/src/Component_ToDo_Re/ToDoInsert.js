@@ -54,4 +54,4 @@ const ToDoInsert = ({onInsert}) => {
     );
 }
 
-export default React.memo(ToDoInsert);
+export default React.memo(ToDoInsert);//부모가 랜더링되면 자식은 무조건 리랜더링 되기 때문이다.

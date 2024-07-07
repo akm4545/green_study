@@ -40,12 +40,13 @@ function reducer(list, action){
 
 const ToDoMain = () => {
     
-    const [list, dispatch] = useReducer(reducer, undefined, createList);
+    //const [list, dispatch] = useReducer(reducer, undefined, createList); // 많은 양의 무거운 데이터 작업일경우...
+    const [list, dispatch] = useReducer(reducer, []);
 
-    // 2024 07 07 useMemo 추가해봄 (최적화???)
-    const memoList = useMemo(() => {
-        return list;
-    }, [list]);
+    // 2024 07 07 useMemo 추가해봄 (최적화???) // 여기서는 사용의미 없음
+    // const memoList = useMemo(() => {
+    //     return list;
+    // }, [list]);
 
     const idx = useRef(1);
 
@@ -91,7 +92,7 @@ const ToDoMain = () => {
     return (
         <div className="ToDoMain">
             <ToDoList 
-                list={memoList} 
+                list={list} 
                 onDblclick={onDblclick} 
                 onDelete={onDelete} 
                 onUpdateForm={onUpdateForm}
