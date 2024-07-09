@@ -1,0 +1,485 @@
+--------------------------- 리액트 리덕스 설치 ---------------------------
+yarn create react-app react-redux-tutorial
+
+npm install redux react-redux
+
+--------------------------- UI 준비 ---------------------------
+리액트 프로젝트에서 리덕스를 사용할 때 가장 많이 사용하는 패턴은 
+프레젠테이셔널 컴포넌트와 컨테이너 컴포넌트를 분리하는 것이다
+
+프레젠테이셔널 컴포넌트 = 주로 상태 관리가 이루어지지 않고 그저 props를 받아 와서 
+화면에 UI를 보여주기만 하는 컴포넌트
+
+컨테이너 컴포넌트 = 리덕스와 연동되어 있는 컴포넌트
+리덕스로 상태를 받아 오기도 하고 리덕스 스토어에 액션을 디스패치 하기도 한다
+
+UI 관련 프레젠테이셔널 컴포넌트 경로는 src/components 경로
+리덕스 연동 컨테이너 컴포넌트는 src/containers 경로
+
+components/Counter.js
+const Counter = ({ number, onIncrease, onDecrease }) => {
+    return (
+        <div>
+            <h1>{number}</h1>
+            <div>
+                <button onClick={onIncrease}>+1</button>
+                <button onClick={onDecrease}>-1</button>
+            </div>
+        </div>
+    )
+}
+
+export default Counter
+
+App.js
+import Counter from './components/Counter'
+
+const App = () => {
+    return (
+        <div>
+            <Counter number={0} />
+        </div>
+    )
+}
+
+export default App
+
+
+components/Todos.js
+const TodoItem = ({ todo, onToggle, onRemove }) => {
+    return (
+        <div>
+            <input type='checkbox' />
+            <span>예제 텍스트</span>
+            <button>삭제</button>
+        </div>
+    )
+}
+
+const Todos = ({
+    input,
+    todos,
+    onChangeInput,
+    onInsert,
+    onToggle,
+    onRemove
+}) => {
+    const onSubmit = e => {
+        e.preventDefault()
+    }
+
+    return (
+        <div>
+            <form onSubmit={onSubmit}>
+                <input />
+                <button type="submit">등록</button>
+            </form>
+            <div>
+                <TodoItem />
+                <TodoItem />
+                <TodoItem />
+                <TodoItem />
+                <TodoItem />
+            </div>
+        </div>
+    )
+}
+
+export default Todos
+
+App.js
+import Counter from './components/Counter'
+import Todos from './components/Todos'
+
+const App = () => {
+    return (
+        <div>
+            <Counter number={0} />
+            <hr />
+            <Todos />
+        </div>
+    )
+}
+
+export default App
+
+
+--------------------------- 리덕스 관련 코드 작성 ---------------------------
+일반적인 구조
+actions,
+constants,
+reducers 
+세 개의 디렉터리를 만들고 그 안에 기능별로 파일을 하나씩 만든다
+코드를 종류에 따라 다른 파일에 작성하여 정리할 수 있어서 편리하지만 새로운 액션을 만들 때마다 세 종류의 파일을
+모두 수정해야 하기 떄문에 불편하기도 하다
+
+액션 타입, 액션 생성 함수, 리듀서 함수를 기능별로 파일 하나에 몰아서 작성하는 방식은
+Ducks 패턴이라고 부르며 앞의 방식이 불편함을 느낀 개발자들이 자주 사용한다
+파일 하나에 작성한 코드를 모듈이라고 부른다
+
+예제는 Ducks 패턴으로 진행
+
+액션 타입 정의
+modules/counter.js
+const INCREASE = 'counter/INCREASE'
+const DECREASE = 'counter/DECREASE'
+
+액션 타입은 대문자로 정의하고 내용은 '모듈 이름/액션 이름'과 같은 형태로 작성
+이렇게 작성하면 나중에 프로젝트가 커졌을 때 액션의 이름이 충돌되지 않게 해 준다
+
+액션 생성 함수 만들기
+액션 타입 정의
+modules/counter.js
+const INCREASE = 'counter/INCREASE'
+const DECREASE = 'counter/DECREASE'
+
+export const increase = () => ({ type: INCREASE })
+export const decrease = () => ({ type: DECREASE })
+
+초기 상태 및 리듀서 함수 만들기
+modules/counter.js
+const INCREASE = 'counter/INCREASE'
+const DECREASE = 'counter/DECREASE'
+
+export const increase = () => ({ type: INCREASE })
+export const decrease = () => ({ type: DECREASE })
+
+const initialState = {
+    number: 0
+}
+
+function counter(state = initialState, action){
+    switch(action.type){
+        case INCREASE:
+            return {
+                number: state.number + 1
+            }
+        case DECREASE:
+            return {
+                number: state.number - 1
+            }
+        default:
+            return state
+    }
+}
+
+export default counter
+
+export는 여러개를 내보낼 수 있지만 export default는 단 한 개만 내보낼 수 있다
+불러오는 방식도 다르다
+import counter from './counter'
+import { increase, decrease } from './counter'
+import counter, { increase, decrease } from './counter'
+
+todo 모듈 만들기
+modules/todos.js
+const CHANGE_INPUT = 'todos/CHANGE_INPUT'
+const INSERT = 'todos/INSERT'
+const TOGGLE = 'todos/TOGGLE'
+const REMOVE = 'todos/REMOVE'
+
+액션 생성 함수 만들기
+modules/todos.js
+const CHANGE_INPUT = 'todos/CHANGE_INPUT'
+const INSERT = 'todos/INSERT'
+const TOGGLE = 'todos/TOGGLE'
+const REMOVE = 'todos/REMOVE'
+
+export const changeInput = input => ({
+    type: CHANGE_INPUT,
+    input
+})
+
+let id = 3
+export const insert = text => ({
+    type: INSERT,
+    todo: {
+        id: id++,
+        text,
+        done: false
+    }
+})
+
+export const toggle = id => ({
+    type: TOGGLE,
+    id
+})
+
+export const remove = id => ({
+    type: REMOVE,
+    id
+})
+
+초기 상태 및 리듀서 함수 만들기
+modules/todos.js
+const CHANGE_INPUT = 'todos/CHANGE_INPUT'
+const INSERT = 'todos/INSERT'
+const TOGGLE = 'todos/TOGGLE'
+const REMOVE = 'todos/REMOVE'
+
+export const changeInput = input => ({
+    type: CHANGE_INPUT,
+    input
+})
+
+let id = 3
+export const insert = text => ({
+    type: INSERT,
+    todo: {
+        id: id++,
+        text,
+        done: false
+    }
+})
+
+export const toggle = id => ({
+    type: TOGGLE,
+    id
+})
+
+export const remove = id => ({
+    type: REMOVE,
+    id
+})
+
+const initialState = {
+    input: '',
+    todos: [
+        {
+            id: 1,
+            text: '리덕스 기초 배우기',
+            done: true
+        },
+        {
+            id: 2,
+            text: '리액트와 리덕스 사용하기'
+            done: false
+        }
+    ]
+}
+
+function todos(state = initialState, action){
+    switch(action.type){
+        case CHANGE_INPUT:
+            return {
+                ...state,
+                input: action.input
+            }
+        case INSERT:
+            return {
+                ...state,
+                todos: state.todos.concat(action.todo)
+            }
+        case TOGGLE:
+            return {
+                ...state,
+                todos: state.todos.map(todo =>
+                    todo.id === action.id ? { ...todo, done: !todo.done } : todo
+                )
+            }
+        case REMOVE:
+            return {
+                ...state,
+                todos: state.todos.filter(todo => todo.id !== action.id)
+            }
+        default:
+            return state
+    }
+}
+
+export default todos
+
+루트 리듀서 만들기
+createStore 함수는 스토어를 만들 때 리듀서를 하나만 사용해야 한다
+그렇기 떄문에 기존에 만들었던 리듀서를 합쳐 주어야 한다
+이 작업은 리덕스에서 제공하는 combineReducers라는 유틸 함수를 사용하여 쉽게 처리할 수 있다
+
+modules/index.js
+import { combineReducers } from 'redux'
+import counter from './counter'
+import todos from './todos'
+
+const rootReducer = combineReducers({
+    counter,
+    todos
+})
+
+export default rootReducer
+
+파일 이름을 index.js로 설정하면 나중에 불러올때 디렉터리 이름까지만 입력해도 된다
+import rootReducer from './modules'
+
+--------------------------- 리액트 애플리케이션에 리덕스 적용 ---------------------------
+스토어 만들기
+src/index.js
+import ReactDOM from 'react-dom'
+import { createStore } from 'redux'
+import './index.css'
+import App from './App'
+import rootReducer from './modules'
+
+const store = createStore(rootReducer)
+
+ReactDOM.render(<App />, document.getElementById('root'))
+
+Provicer 컴포넌트를 사용하여 프로젝트에 리덕스 적용
+리액트 컴포넌트에서 스토어를 사용할 수 있도록 App 컴포넌트를 react-redux에서 제공하는 
+Provider 컴포넌트로 감싸 주어야 한다
+이 컴포넌트를 사용할 때는 store를 props로 전달해 주어야 한다
+
+src/index.js
+import ReactDOM from 'react-dom'
+import { createStore } from 'redux'
+import './index.css'
+import App from './App'
+import rootReducer from './modules'
+import { Provider } from 'react-redux'
+
+const store = createStore(rootReducer)
+
+ReactDOM.render(
+    <Provider store={store}>
+        <App />
+    </Provider>
+    , document.getElementById('root')
+)
+
+
+리덕스 개발자 도구 설치
+https://chrome.google.com/webstore/
+Redux DevTools 검색하여 설치
+
+npm install redux-devtools-extension
+src/index.js
+import ReactDOM from 'react-dom'
+import { createStore } from 'redux'
+import './index.css'
+import App from './App'
+import rootReducer from './modules'
+import { Provider } from 'react-redux'
+import { composeWithDevTools } from 'redux-devtools-extension'
+
+const store = createStore(rootReducer, composeWithDevTools())
+
+ReactDOM.render(
+    <Provider store={store}>
+        <App />
+    </Provider>
+    , document.getElementById('root')
+)
+
+크롬 개발자 모드에서 Redux 탭 생성되었는지 확인
+state 버튼을 눌러서 확인
+
+--------------------------- 컨테이너 컴포넌트 생성 ---------------------------
+컨테이너 = 리덕스 스토어와 연동된 컴포넌트
+
+containers/CounterContainer.js
+import Counter from '../components/Counter'
+
+const CounterContainer = () => {
+    return <Counter />
+}
+
+export default CounterContainer
+
+리덕스와 연동하려면 react-redux에서 제공하는 connect 함수를 사용해야 한다
+connect(mapStateToProps, mapDispatchToProps)(연동할 컴포넌트)
+mapStateToProps = 리덕스 스토어 안의 상태를 컴포넌트의 props로 넘겨주기 위해 설정하는 함수
+mapDispatchToProps = 액션 생성 함수를 컴포넌트의 props로 넘겨주기 위해 사용하는 함수
+
+connect 함수를 호출하고 나면 또 다른 함수를 반환한다
+반환된 함수에 컴포넌트를 파라미터로 넣어 주면 리덕스와 연동된 컴포넌트가 만들어진다
+
+컴포넌트 연동
+containers/CounterContainer.js
+import { connect } from 'react-redux'
+import Counter from '../components/Counter'
+
+const CounterContainer = ({ number, increase, decrease }) => {
+    return (
+        <Counter 
+            number={number} 
+            onIncrease={increase}
+            onDecrease={decrease}
+        />
+    )
+}
+
+const mapStateToProps = state => ({
+    number: state.counter.nubmer
+})
+
+const mapDispatchToProps = dispatch => ({
+    //임시 함수
+    increase: () => {
+        console.log('increase')
+    },
+    decrease: () => {
+        console.log('decrease')
+    }
+})
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(CounterContainer)
+
+mapStateToProps와 mapDispatchToProps에서 반환하는 객체 내부의 값들은 
+컴포넌트의 props로 전달된다
+mapStateToProps = state를 파라미터로 받아 오며 이 값은 현재 스토어가 지니고 있는 상태
+mapDispatchToProps = store의 내장 함수 dispatch를 파라미터로 받아 온다
+
+App.js
+import Todos from './components/Todos'
+import CounterContainer from './containers/CounterContainer'
+
+const App = () => {
+    return (
+        <div>
+            <CounterContainer />
+            <hr />
+            <Todos />
+        </div>
+    )
+}
+
+export default App
+
+console.log 창 확인
+
+액션 생성 함수를 불러와 디스패치
+containers/CounterContainer.js
+import { connect } from 'react-redux'
+import Counter from '../components/Counter'
+//추가
+import { increase, decrease } from '../modules/counter'
+
+const CounterContainer = ({ number, increase, decrease }) => {
+    return (
+        <Counter 
+            number={number} 
+            onIncrease={increase}
+            onDecrease={decrease}
+        />
+    )
+}
+
+const mapStateToProps = state => ({
+    number: state.counter.nubmer
+})
+
+const mapDispatchToProps = dispatch => ({
+    //변경
+    increase: () => {
+        dispatch(increase())
+    },
+    decrease: () => {
+        dispatch(decrease())
+    }
+})
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(CounterContainer)
