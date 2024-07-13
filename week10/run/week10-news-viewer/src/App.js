@@ -13,7 +13,7 @@ const App = () => {
   //   //리팩토링
   //   try {
   //     //const response = await axios.get('https://jsonplaceholder.typicode.com/todos/1');
-  //     const response = await axios.get('https://newsapi.org/v2/top-headlines?country=kr&apikey=962dc1b40c0e486fb08f5f7f8053209d');
+  //     const response = await axios.get('https://newsapi.org/v2/top-headlines?country=kr&apikey=[api키]');
   //     setData(response.data);
   //   } catch (error) {
   //     console.log(error);
