@@ -1,0 +1,526 @@
+--------------------------- redux-saga ---------------------------
+redux-saga는 좀 더 까다로운 상황에서 유용하다
+예시
+기존 요청을 취소 처리해야 할 때 (불필요한 중복 요청 방지)
+특정 액션이 발생했을 때 다른 액션을 발생시키거나 API 요청 등 리덕스와 관계없는 코드를 실행할 때
+웹소켓을 사용할 때
+API 요청 실패 시 재요청해야 할 때
+
+--------------------------- 제네레이터 함수 ---------------------------
+ES6에서 나온 함수
+일반적인 상황에서는 많이 사용되지 않는다
+함수를 특정 구간에 멈춰 놓을 수도 있고 원할 때 다시 돌아가게 할 수도 있다
+
+function weirdFunction() {
+    return 1;
+    return 2;
+    return 3;
+    return 4;
+    return 5;
+}
+
+이 함수는 제대로 작동하지 않는다
+하지만 제네레이터 함수를 사용하면 함수에서 값을 순차적으로 반환할 수 있다
+심지어 함수의 흐름을 도중에 멈춰 놓았다가 다시 이어서 진행시킬 수도 있다
+
+개발자 모드 실행
+function* generatorFunction() {
+    console.log('안녕하세요')
+    yield 1
+    console.log('제네레이터 함수')
+    yield 2
+    console.log('function*')
+    yield 3
+    return 4
+}
+
+제네레이터 생성
+제네레이터 함수를 호출했을 때 반환되는 객체를 제네레이터라고 부른다
+const generator = generatorFunction()
+
+generator.next()를 계속 입력하고 결과 관찰
+
+제네레이터가 처음 만들어지면 함수의 흐름은 멈춰 있는 상태
+next()가 호출되면 다음 yield가 있는 곳까지 호출하고 다시 멈춘다
+함수를 도중에 멈출 수도 있고 순차적으로 여러 값을 반환시킬 수도 있다
+next 함수에 파라미터를 넣으면 제네레이터 함수에서 yield를 사용하여 해당 값을 조회할 수도 있다
+
+개발자 모드 진행
+function* sumGenerator() {
+    console.log('sumGenerator가 만들어졌습니다.')
+    let a = yield;
+    let b = yield;
+    yield a + b
+}
+
+const sum = sumGenerator()
+sum.next()
+sum.next(1)
+sum.next(2)
+sum.next()
+
+redux-saga는 제네레이터 함수 문법을 기반으로 비동기 작업을 관리
+우리가 디스패치하는 액션을 모니터링해서 그에 따라 필요한 작업을 따로 수행
+
+개발자 도구 진행
+function* watchGenerator(){
+    console.log('모니터링 중...')
+    let prevAction = null
+
+    while(true){
+        const action = yield
+        console.log('이전 액션: ', prevAction)
+        prevAction = aciton
+
+        if(action.type === 'HELLO'){
+            console.log('안녕하세요')
+        }
+    }
+}
+
+const watch = watchGenerator()
+
+watch.next()
+watch.next({ type: 'TEST' })
+watch.next({ type: 'HELLO' })
+
+--------------------------- 비동기 카운터 만들기 ---------------------------
+npm install redux-saga
+
+제네레이터 함수를 사가(saga) 라고 부른다
+modules/counter.js
+import { createAction, handleActions } from 'redux-actions'
+import { delay, put, takeEvery, takeLatest } from 'redux-saga/effects'
+
+const INCREASE = 'counter/INCREASE'
+const DECREASE = 'counter/DECREASE'
+const INCREASE_ASYNC = 'counter/INCREASE_ASYNC'
+const DECREASE_ASYNC = 'counter/DECREASE_ASYNC'
+
+export const increase = createAction(INCREASE)
+export const decrease = createAction(DECREASE)
+
+//마우스 클릭 이벤트가 payload 안에 들어가지 않도록
+//() => undefined를 두 번째 파라미터로 넣는다
+export const increaseAsync = createAction(INCREASE_ASYNC, () => undefined)
+export const decreaseAsync = createAction(DECREASE_ASYNC, () => undefined)
+
+function* increaseSaga() {
+    yield delay(1000) //1초 기달리기
+    yield put(increase()) //특정 액션 디스패치
+}
+
+function* decreaseSaga() {
+    yield delay(1000) //1초 기달리기
+    yield put(decrease()) //특정 액션 디스패치
+}
+
+export function* counterSaga() {
+    // takeEvery는 들어오는 모든 액션에 대해 특정 작업을 처리
+    yield takeEvery(INCREASE_ASYNC, increaseSaga)
+    // takeLatest는 기존에 진행 중이던 작업이 있다면 취소 처리하고
+    // 가장 마지막으로 실행된 작업만 수행
+    yield takeLatest(DECREASE_ASYNC, decreaseSaga)
+}
+
+const initialState = 0
+
+const counter = handleActions(
+    {
+        [INCREASE]: state => state + 1,
+        [DECREASE]: state => state - 1
+    },
+    initialState
+)
+
+export default counter
+
+루트 리듀서처럼 루트 사가를 만들어 주어야 한다
+modules/index.js
+import { combineReducers } from 'redux'
+import { all } from 'redux-saga/effects'
+import counter, { counterSaga } from './counter'
+import sample from './sample'
+import loading from './loading'
+
+const rootReducer = combineReducers({
+    counter,
+    sample,
+    loading
+})
+
+export function* rootSaga() {
+    // all 함수는 여러 사가를 합쳐 주는 역할
+    yield all([counterSaga()])
+}
+
+export default rootReducer
+
+사가 적용
+index.js
+import ReactDOM from 'react-dom'
+import { createStore, applyMiddleware } from 'redux'
+import { Provider } from 'react-redux'
+import './index.css'
+import App from './App'
+추가
+import rootReducer, { rootSaga } from './modules'
+//import loggerMiddleware from './lib/loggerMiddleware'
+import { createLogger } from 'redux-logger'
+import ReduxThunk from 'redux-thunk'
+추가
+import createSagaMiddleware from 'redux-saga'
+
+const logger = createLogger()
+추가
+const sagaMiddleware = createSagaMiddleware()
+const store = createStore(rootReducer, applyMiddleware(logger, ReduxThunk, sagaMiddleware))
+sagaMiddleware.run(rootSaga)
+
+ReactDOM.render(
+    <Provider store={store}>
+        <App />
+    </Provider>,
+    document.getElementById('root')
+)
+
+App에 CounterContainer 적용 후 실행
+
+리덕스 개발자 도구 라이브러리 설치
+npm install redux-devtools-extension
+
+index.js
+import ReactDOM from 'react-dom'
+import { createStore, applyMiddleware } from 'redux'
+import { Provider } from 'react-redux'
+import './index.css'
+import App from './App'
+import rootReducer, { rootSaga } from './modules'
+//import loggerMiddleware from './lib/loggerMiddleware'
+import { createLogger } from 'redux-logger'
+import ReduxThunk from 'redux-thunk'
+import createSagaMiddleware from 'redux-saga'
+추가
+import { composeWithDevTools } from 'redux-devtools-extension'
+
+const logger = createLogger()
+const sagaMiddleware = createSagaMiddleware()
+추가
+const store = createStore(rootReducer, 
+    composeWithDevTools(applyMiddleware(logger, ReduxThunk, sagaMiddleware))
+)
+sagaMiddleware.run(rootSaga)
+
+ReactDOM.render(
+    <Provider store={store}>
+        <App />
+    </Provider>,
+    document.getElementById('root')
+)
+
++ 버튼을 두 번 두르면 INCREASE_ASYNC 액션이 두 번 디스패치
+이에 따라 INCREASE 액션도 두 번 디스패치
+takeEvery를 사용했으므로 디스패치되는 모든 INCREASE_ASYNC 액션에 대해 1초 후 INCREASE 액션 발생
+
+- 버튼을 두 번 누르면 DECREASE 액션이 한 번 디스패치
+takeLatest를 사용했기 때문에 여러 액션이 중첩되어 디스패치되었을 때는 기존의 것들을 무시하고
+가장 마지막 액션만 제대로 처리
+
+--------------------------- API 요청 상태 관리 ---------------------------
+modules/sample.js
+import { createAction, handleActions } from 'redux-actions'
+import { call, put, takeLatest } from 'redux-saga/effects'
+import * as api from '../lib/api'
+import { startLoading, finishLoading } from './loading'
+
+const GET_POST = 'sample/GET_POST'
+const GET_POST_SUCCESS = 'sample/GET_POST_SUCCESS'
+const GET_POST_FAILURE = 'smaple/GET_POST_FAILURE'
+
+const GET_USERS = 'sample/GET_USERS'
+const GET_USERS_SUCCESS = 'sample/GET_USERS_SUCCESS'
+const GET_USERS_FAILURE = 'smaple/GET_USERS_FAILURE'
+
+export const getPost = createAction(GET_POST, id => id)
+export const getUsers = createAction(GET_USERS)
+
+function* getPostSaga(aciton){
+    //로딩 시작
+    yield put(startLoading(GET_POST))
+    //파라미터로 action을 받아 오면 액션의 정보 조회 가능
+
+    try{
+        //call을 사용하면 Promise를 반환하는 함수를 호출하고 기다릴 수 있다
+        //첫 번째 파라미터는 함수 나머지 파라미터는 해당 함수에 넣을 인수
+        //리덕스 사가를 사용할 떄는 요청에 필요한 값을 액션의 payload에 넣는다
+        const post = yield call(api.getPost, action.payload) // api.getPost(action.payload)
+
+        yield put({
+            type: GET_POST_SUCCESS,
+            payload: post.data
+        })
+    } catch(e){
+        yield put({
+            type: GET_POST_FAILURE,
+            payload: e,
+            error: true
+        })
+    }
+    yield put(finishLoading(GET_POST))
+}
+
+function* getUsersSaga() {
+    yield put(startLoading(GET_USERS))
+
+    try{
+        const users = yield call(api.getUsers)
+
+        yield put({
+            type: GET_USERS_SUCCESS,
+            payload: users.data
+        })
+    }catch(e){
+        yield put({
+            type: GET_USERS_FAILURE,
+            payload: e,
+            error: true
+        })
+    }
+    yield put(finishLoading(GET_USERS))
+}
+
+export function* sampleSaga() {
+    yield takeLatest(GET_POST, getPostSaga)
+    yield takeLatest(GET_USERS, getUsersSaga)
+}
+
+const initialState = {
+    post: null,
+    users: null
+}
+
+const sample = handleActions(
+    {
+        [GET_POST_SUCCESS]: (state, action) => ({
+            ...state,
+            post: action.payload
+        }),
+        [GET_USERS_SUCCESS]: (state, action) => ({
+            ...state,
+            users: action.payload
+        })
+    },
+    initialState
+)
+
+export default smaple
+
+루트 사가에 등록
+modules/index.js
+import { combineReducers } from 'redux'
+import { all } from 'redux-saga/effects'
+import counter, { counterSaga } from './counter'
+import sample from './sample'
+import loading from './loading'
+
+const rootReducer = combineReducers({
+    counter,
+    sample,
+    loading
+})
+
+export function* rootSaga() {
+    // all 함수는 여러 사가를 합쳐 주는 역할
+    yield all([counterSaga(), sampleSaga()])
+}
+
+export default rootReducer
+
+App 컴포넌트에 렌더링 SampleContainer
+
+--------------------------- 리펙토링 ---------------------------
+lib/createRequestSaga.js
+import { call, put } from 'redux-saga/effects'
+import { startLoading, finishLoading } from '../modules/loading'
+
+export default function createRequestSaga(type, request){
+    const SUCCESS = `${type}_SUCCESS`
+    const FAILURE = `${type}_FAILURE`
+
+    return function*(action){
+        yield put(startLoading(type))
+
+        try{
+            const response = yield call(request, action.payload)
+
+            yield put({
+                type: SUCCESS,
+                payload: response.data
+            })
+        }catch(e){
+            yield put({
+                type: FAILURE,
+                payload: e,
+                error: true
+            })
+        }
+
+        yield put(finishLoading(type))
+    }
+}
+
+modules/sample.js
+import { createAction, handleActions } from 'redux-actions'
+수정
+import { takeLatest } from 'redux-saga/effects'
+import * as api from '../lib/api'
+수정
+import createRequestSaga from '../lib/createRequestSaga'
+
+수정
+const GET_POST = 'sample/GET_POST'
+const GET_POST_SUCCESS = 'sample/GET_POST_SUCCESS'
+
+수정
+const GET_USERS = 'sample/GET_USERS'
+const GET_USERS_SUCCESS = 'sample/GET_USERS_SUCCESS'
+
+export const getPost = createAction(GET_POST, id => id)
+export const getUsers = createAction(GET_USERS)
+
+수정
+export const getPost = createAction(GET_POST, id => id)
+export const getUsers = createAction(GET_USERS)
+
+
+export function* sampleSaga() {
+    yield takeLatest(GET_POST, getPostSaga)
+    yield takeLatest(GET_USERS, getUsersSaga)
+}
+
+const initialState = {
+    post: null,
+    users: null
+}
+
+const sample = handleActions(
+    {
+        [GET_POST_SUCCESS]: (state, action) => ({
+            ...state,
+            post: action.payload
+        }),
+        [GET_USERS_SUCCESS]: (state, action) => ({
+            ...state,
+            users: action.payload
+        })
+    },
+    initialState
+)
+
+export default smaple
+
+--------------------------- 유용한 기능 ---------------------------
+사가 내부에서 현재 상태 조회 select 사용
+modules/counter.js
+import { createAction, handleActions } from 'redux-actions'
+수정
+import { delay, put, takeEvery, takeLatest, select } from 'redux-saga/effects'
+
+const INCREASE = 'counter/INCREASE'
+const DECREASE = 'counter/DECREASE'
+const INCREASE_ASYNC = 'counter/INCREASE_ASYNC'
+const DECREASE_ASYNC = 'counter/DECREASE_ASYNC'
+
+export const increase = createAction(INCREASE)
+export const decrease = createAction(DECREASE)
+
+//마우스 클릭 이벤트가 payload 안에 들어가지 않도록
+//() => undefined를 두 번째 파라미터로 넣는다
+export const increaseAsync = createAction(INCREASE_ASYNC, () => undefined)
+export const decreaseAsync = createAction(DECREASE_ASYNC, () => undefined)
+
+function* increaseSaga() {
+    yield delay(1000) //1초 기달리기
+    yield put(increase()) //특정 액션 디스패치
+    수정
+    const number = yield select(state => state.counter) //state는 스토어 상태
+    console.log(`현재 값은 ${number}입니다.`)
+}
+
+function* decreaseSaga() {
+    yield delay(1000) //1초 기달리기
+    yield put(decrease()) //특정 액션 디스패치
+}
+
+export function* counterSaga() {
+    // takeEvery는 들어오는 모든 액션에 대해 특정 작업을 처리
+    yield takeEvery(INCREASE_ASYNC, increaseSaga)
+    // takeLatest는 기존에 진행 중이던 작업이 있다면 취소 처리하고
+    // 가장 마지막으로 실행된 작업만 수행
+    yield takeLatest(DECREASE_ASYNC, decreaseSaga)
+}
+
+const initialState = 0
+
+const counter = handleActions(
+    {
+        [INCREASE]: state => state + 1,
+        [DECREASE]: state => state - 1
+    },
+    initialState
+)
+
+export default counter
+
+사가 실행 주기를 제한하는 방법 throttle 함수를 사용
+throttle함수를 사용하면 사가가 n초에 단 한 번만 호출되도록 설정 가능
+modules/counter.js
+import { createAction, handleActions } from 'redux-actions'
+수정
+import { delay, put, takeEvery, takeLatest, select, throttle } from 'redux-saga/effects'
+
+const INCREASE = 'counter/INCREASE'
+const DECREASE = 'counter/DECREASE'
+const INCREASE_ASYNC = 'counter/INCREASE_ASYNC'
+const DECREASE_ASYNC = 'counter/DECREASE_ASYNC'
+
+export const increase = createAction(INCREASE)
+export const decrease = createAction(DECREASE)
+
+//마우스 클릭 이벤트가 payload 안에 들어가지 않도록
+//() => undefined를 두 번째 파라미터로 넣는다
+export const increaseAsync = createAction(INCREASE_ASYNC, () => undefined)
+export const decreaseAsync = createAction(DECREASE_ASYNC, () => undefined)
+
+function* increaseSaga() {
+    yield delay(1000) //1초 기달리기
+    yield put(increase()) //특정 액션 디스패치
+    const number = yield select(state => state.counter) //state는 스토어 상태
+    console.log(`현재 값은 ${number}입니다.`)
+}
+
+function* decreaseSaga() {
+    yield delay(1000) //1초 기달리기
+    yield put(decrease()) //특정 액션 디스패치
+}
+
+export function* counterSaga() {
+    수정
+    yield throttle(3000, INCREASE_ASYNC, increaseSaga)
+    // takeLatest는 기존에 진행 중이던 작업이 있다면 취소 처리하고
+    // 가장 마지막으로 실행된 작업만 수행
+    yield takeLatest(DECREASE_ASYNC, decreaseSaga)
+}
+
+const initialState = 0
+
+const counter = handleActions(
+    {
+        [INCREASE]: state => state + 1,
+        [DECREASE]: state => state - 1
+    },
+    initialState
+)
+
+export default counter
+

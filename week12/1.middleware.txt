@@ -1,0 +1,902 @@
+--------------------------- 미들웨어 ---------------------------
+CRA(create-react-app)
+yarn create react-app learn-redux-middleware
+
+리덕스 설치
+npm install redux react-redux redux-actions
+
+카운터 모듈 작성
+modules/counter.js
+import { createAction, handleActions } from 'redux-actions'
+
+const INCREASE = 'counter/INCREASE'
+const DECREASE = 'counter/DECREASE'
+
+export const increase = createAction(INCREASE)
+export const decrease = createAction(DECREASE)
+
+const initialState = 0
+
+const counter = handleActions(
+    {
+        [INCREASE]: state => state + 1,
+        [DECREASE]: state => state - 1
+    },
+    initialState
+)
+
+export default counter
+
+루트 리듀서 작성
+modules/index.js
+import { combineReducers } from 'redux'
+import counter from './counter'
+
+const rootReducer = combineReducers({
+    counter
+})
+
+export default rootReducer
+
+적용
+index.js
+import ReactDOM from 'react-dom'
+import { createStore } from 'redux'
+import { Provider } from 'react-redux'
+import './index.css'
+import App from './App'
+import rootReducer from './modules'
+
+const store = createStore(rootReducer)
+
+ReactDOM.render(
+    <Provider store={store}>
+        <App />
+    </Provider>,
+    document.getElementById('root')
+)
+
+컴포넌트 작성
+components/Counter.js
+const Counter = ({ onIncrease, onDecrease, number }) => {
+    return (
+        <div>
+            <h1>{number}</h1>
+            <button onClick={onIncrease}>+1</button>
+            <button onClick={onDecrease}>-1</button>
+        </div>
+    )
+}
+
+export default Counter
+
+컨테이너 작성
+containers/CounterContainer.js
+import { connect } from 'react-redux'
+import { increase, decrease } from '../modules/counter'
+import Counter from '../components/Counter'
+
+const CounterContainer = ({ number, increase, decrease }) => {
+    return (
+        <Counter 
+            number={number}
+            onIncrease={increase}
+            onDecrease={decrease}
+        />
+    )
+}
+
+export default connect(
+    state => ({
+        number: state.counter
+    }),
+    {
+        increase,
+        decrease
+    }
+)(CounterContainer)
+
+렌더링
+App.js
+import CounterContainer from './containers/CounterContainer'
+
+const App = () => {
+    return (
+        <div>
+            <CounterContainer />
+        </div>
+    )
+}
+
+export default App
+
+미들웨어는 액션을 디스패치했을 떄 리듀서에서 이를 처리하기에 앞서 사전 지정 작업을 실행한다
+실행 순서
+액션 -> 미들웨어 -> 리듀서 -> 스토어
+
+미들웨어 역할 
+액션을 콘솔에 기록
+액션 정보를 기반으로 액션을 아예 취소
+다른 종류의 액션을 추가로 디스패치 등
+
+실제 프로젝트를 작업할 때 미들웨어를 직접 만들일은 많지 않다
+다른 개발자가 만들어 놓은 미들웨어를 사용한다
+
+로깅 미들웨어 작성
+lib/loggerMiddleware.js
+const loggerMiddleware = store => next => action => {
+
+}
+
+export default loggerMiddleware
+
+일반 function으로 풀어쓰면
+const loggerMiddleware = function loggerMiddleware(store){
+    return function(next){
+        return function(action){
+
+        }
+    }
+}
+
+미들웨어는 결국 함수를 반환하는 함수를 반환하는 함수
+store = 리덕스 스토어 인스턴스
+action = 디스패치된 액션
+next = 함수 형태, store.dispatch와 비슷한 역할 
+next(action)을 호출하면 그 다음 처리해야 할 미들웨어에게 액션을 넘겨주고 만약 그다음 미들웨어가 없다면 리듀서에
+액션을 넘김
+
+미들웨어 내부에서 store.dispatch를 사용하면 첫 번쨰 미들웨어부터 다시 처리
+미들웨어 내부에서 next를 사용하지 않으면 액션이 리듀서에 전달되지 않음 (무시)
+
+로깅 미들웨어 작성
+lib/loggerMiddleware.js
+const loggerMiddleware = store => next => action => {
+    console.group(action && action.type)
+    console.log('이전 상태', store,getState())
+    console.log('액션', action)
+    next(action)
+    console.log('다음 상태', store.getState())
+    console.groupEnd()
+}
+
+export default loggerMiddleware
+
+미들웨어 적용
+index.js
+import ReactDOM from 'react-dom'
+추가
+import { createStore, applyMiddleware } from 'redux'
+import { Provider } from 'react-redux'
+import './index.css'
+import App from './App'
+import rootReducer from './modules'
+추가
+import loggerMiddleware from './lib/loggerMiddleware'
+
+const store = createStore(rootReducer, applyMiddleware(loggerMiddleware))
+
+ReactDOM.render(
+    <Provider store={store}>
+        <App />
+    </Provider>,
+    document.getElementById('root')
+)
+
+
+--------------------------- 미들웨어 라이브러리 사용 ---------------------------
+npm install redux-logger
+
+index.js
+import ReactDOM from 'react-dom'
+import { createStore, applyMiddleware } from 'redux'
+import { Provider } from 'react-redux'
+import './index.css'
+import App from './App'
+import rootReducer from './modules'
+//import loggerMiddleware from './lib/loggerMiddleware'
+추가
+import { createLogger } from 'redux-logger'
+
+추가
+const logger = createLogger()
+const store = createStore(rootReducer, applyMiddleware(logger))
+
+ReactDOM.render(
+    <Provider store={store}>
+        <App />
+    </Provider>,
+    document.getElementById('root')
+)
+
+--------------------------- 비동기 작업을 처리하는 미들웨어 ---------------------------
+미들웨어 라이브러리
+redux-thunk: 비동기 작업을 처리할 때 가장 많이 사용하는 미들웨어. 객체가 아닌 함수 형태의 
+액션을 디스패치할 수 있게 해 준다
+redux-saga: redux-thunk 다음으로 가장 많이 사용되는 비동기 작업 관련 미들웨어 라이브러리
+특정 액션이 디스패치되었을 때 정해진 로직에 따라 다른 액션을 디스패치시키는 규칙을 작성하여
+비동기 작업을 처리할 수 있게 해 준다
+
+--------------------------- redux-thunk ---------------------------
+
+Thunk
+특정 작업을 나중에 할 수 있도록 미루기 위해 함수 형태로 감싼 것을 의미
+
+주어진 파라미터에 1을 더하는 함수
+const addOne = x => x + 1;
+addOne(1)
+
+연산 작업을 나중으로 미루고 싶다면
+cosnt addOne = x => x + 1;
+function addOneThunk(x) {
+    const thunk = () => addOne(x)
+    return thunk
+}
+
+const fn = addOneThunk(1)
+
+setTimeout(() => {
+    const value = fn()
+    console.log(value)
+}, 1000)
+
+에로우 펑션으로만 구현
+const addOne = x => x + 1
+const addOneThunk = x => () => addOne(x)
+
+const fn = addOneThunk(x)
+setTimeout(() => {
+    const value = fn()
+    console.log(value)
+}, 1000)
+
+redux-thunk 라이브러리를 사용하면 thunk 함수를 만들어서 디스패치
+그러면 리덕스 미들웨어가 그 함수를 전달받아 store의 dispatch와 getState를 파라미터로 넣어서 호출
+
+redux-thunk의 thunk 함수 예시
+const smapleThunk = () => (dispatch, getState) => {
+
+}
+
+라이브러리 설치
+npm add redux-thunk
+
+적용
+index.js
+import ReactDOM from 'react-dom'
+import { createStore, applyMiddleware } from 'redux'
+import { Provider } from 'react-redux'
+import './index.css'
+import App from './App'
+import rootReducer from './modules'
+//import loggerMiddleware from './lib/loggerMiddleware'
+import { createLogger } from 'redux-logger'
+추가
+import ReduxThunk from 'redux-thunk'
+
+const logger = createLogger()
+추가
+const store = createStore(rootReducer, applyMiddleware(logger, ReduxThunk))
+
+ReactDOM.render(
+    <Provider store={store}>
+        <App />
+    </Provider>,
+    document.getElementById('root')
+)
+
+Thunk 생성 함수 만들기
+액션 생성 함수에서 객체 대신 함수 반환
+modules/counter.js
+import { createAction, handleActions } from 'redux-actions'
+
+const INCREASE = 'counter/INCREASE'
+const DECREASE = 'counter/DECREASE'
+
+//변경
+export const increaseAsync = () => dispatch => {
+    setTimeout(() => {
+        dispatch(increase())
+    }, 1000)
+}
+
+export const decreaseAsync = () => dispatch => {
+    setTimeout(() => {
+        dispatch(decrease())
+    }, 1000)
+}
+
+const initialState = 0
+
+const counter = handleActions(
+    {
+        [INCREASE]: state => state + 1,
+        [DECREASE]: state => state - 1
+    },
+    initialState
+)
+
+export default counter
+
+containers/CounterContainer.js
+import { connect } from 'react-redux'
+//변경
+import { increaseAsync, decreaseAsync } from '../modules/counter'
+import Counter from '../components/Counter'
+
+//변경
+const CounterContainer = ({ number, increaseAsync, decreaseAsync }) => {
+    return (
+        <Counter 
+            number={number}
+            //변경
+            onIncrease={increaseAsync}
+            onDecrease={decreaseAsync}
+        />
+    )
+}
+
+export default connect(
+    state => ({
+        number: state.counter
+    }),
+    {
+        //변경
+        increaseAsync,
+        decreaseAsync
+    }
+)(CounterContainer)
+
+
+웹 요청 비동기
+npm install axios
+
+API 함수화
+가독성과 유지 보수를 위해서
+lib/api.js
+import axios from 'axios'
+
+export const getPost = id =>
+    axios.get(`https://jsonplaceholder.typicode.com/posts/${id}`)
+
+export const getUsers = id => 
+    axios.get(`https://jsonplaceholder.typicode.com/users`)
+
+API를 사용하여 데이터를 받아와 상태를 관리할 리듀서 생성
+modules/sample.js
+import { handleActions } from 'redux-actions'
+import * as api from '../lib/api'
+
+const GET_POST = 'sample/GET_POST'
+const GET_POST_SUCCESS = 'sample/GET_POST_SUCCESS'
+const GET_POST_FAILURE = 'sample/GET_POST_FAILURE'
+
+const GET_USERS = 'sample/GET_USERS'
+const GET_USERS_SUCCESS = 'sample/GET_USERS_SUCCESS'
+const GET_USERS_FAILURE = 'sample/GET_USERS_FAILURE'
+
+//thunk 함수 생성
+//액션 생성 함수 자리
+export const getPost = id => async dispatch => {
+    //요청 시작을 알림
+    dispatch({ type: GET_POST })
+
+    try{
+        const response = await api.getPost(id)
+
+        //액션 생성
+        //type: 액션
+        //payload: 데이터
+        //요청 성공
+        dispatch({
+            type: GET_POST_SUCCESS,
+            payload: response.data
+        })
+    } catch(e) {
+        dispatch({
+            type: GET_POST_FAILURE,
+            payload: e,
+            error: true
+        })
+
+        //컴포넌트단에서 에러를 조회할 수 있게 해 줌
+        throw e
+    }
+}
+
+export const getUsers = () => async dispatch => {
+    dispatch({ type: GET_USERS })
+
+    try {
+        const response = await api.getUsers()
+
+        dispatch({
+            type: GET_USERS_SUCCESS,
+            payload: response.data
+        })
+    }catch(e){
+        dispatch({
+            type: GET_USERS_FAILURE,
+            payload: e,
+            error: true
+        })
+
+        throw e
+    }
+}
+
+//초기 상태
+const initialState = {
+    //로딩 중 상태 
+    loading: {
+        GET_POST: false,
+        GET_USERS: false
+    },
+    post: null,
+    users: null
+}
+
+const sample = handleActions(
+    {
+        [GET_POST]: state => ({
+            ...state,
+            loading: {
+                ...state.loading,
+                //요청 시작
+                GET_POST: true
+            }
+        }),
+        [GET_POST_SUCCESS]: (state, aciton) => ({
+            ...state,
+            loading: {
+                ...state.loading,
+                //요청 완료
+                GET_POST: false 
+            }
+            post: action.payload
+        }),
+        [GET_POST_FAILURE]: (state, aciton) => ({
+            ...state,
+            loading: {
+                ...state.loading,
+                //요청 완료
+                GET_POST: false
+            }
+        }),
+        [GET_USERS]: state => ({
+            ...state,
+            loading: {
+                ...state,loading,
+                GET_USERS: true
+            }
+        }),
+        [GET_USERS_SUCCESS]: (state, action) => ({
+            ...state,
+            loading: {
+                ...state.loading,
+                GET_USERS: false
+            },
+            users: action.payload
+        }),
+        [GET_USERS_FAILURE]: (state, aciton) => ({
+            ...state,
+            loading: {
+                ...state.loading,
+                GET_USERS: false
+            }
+        })
+    },
+    initialState
+)
+
+export default sample
+
+루트 리듀서 등록
+modules/index.js
+import { combineReducers } from 'redux'
+import counter from './counter'
+추가
+import sample from './sample'
+
+const rootReducer = combineReducers({
+    counter,
+    추가
+    sample
+})
+
+export default rootReducer
+
+프레젠테이셔널 컴포넌트 작성
+components/Sample.js
+const Sample = ({ loadingPost, loadingUsers, post, users }) => {
+    return (
+        <div>
+            <section>
+                <h1>포스트</h1>
+                {loadingPost && '로딩 중...'}
+                {!loadingPost && post && (
+                    <div>
+                        <h3>{post.title}</h3>
+                        <h3>{post.body}</h3>
+                    </div>
+                )}
+            </section>
+            <hr />
+            <section>
+                <h1>사용자 목록</h1>
+                {loadingUsers && '로딩 중...'}
+                {!loadingUsers && users && (
+                    <ul>
+                        {users.map(user => (
+                            <li key={user.id}>
+                                {user.username} ({user.email})
+                            </li>
+                        ))}
+                    <ul>
+                )}
+            </section>
+        </div>
+    )
+}
+
+export default Sample
+
+
+컨테이너 컴포넌트 작성
+containers/SampleContainer.js
+import { connect } from 'react-redux'
+import Sample from '../components/Sample'
+import { getPost, getUsers } from '../modules/smaple'
+
+const { useEffect } = React
+
+const SampleContainer = ({
+    getPost,
+    getUsers,
+    post,
+    users,
+    loadingPost,
+    loadingUsers
+}) => {
+    useEffect(() => {
+        getPost(1)
+        getUsers(1)
+    }, [getPost, getUsers])
+
+    return (
+        <Sample 
+            post={post}
+            users={users}
+            loadingPost={loadingPost}
+            loadingUsers={loadingUsers}
+        />
+    )
+}
+
+export default connect(
+    ({ sample }) => ({
+        post: sample.post,
+        users: sample.users,
+        loadingPost: sample.loading.GET_POST,
+        loadingUsers: sample.loading.GET_USERS
+    }),
+    {
+        getPost,
+        getUsers
+    }
+)(SampleContainer)
+
+App.js
+import SampleContainer from './containers/SampleContainer'
+
+const App = () => {
+    return (
+        <div>
+            <SampleContainer />
+        </div>
+    )
+}
+
+export default App
+
+thunk 함수 리펙토링
+lib/createRequestThunk.js
+export default function createRequestThunk(type, request) {
+    //성공 및 실패 액션 타입 정의
+    const SUCCESS = `${type}_SUCCESS`
+    const FAILURE = `${type}_FAILURE`
+
+    return params => async dispatch => {
+        //시작
+        dispatch({ type }) 
+
+        try{
+            const response = await request(params)
+
+            dispatch({
+                type: SUCCESS,
+                payload: response.data
+            }) //성공
+        }catch(e){
+            dispatch({
+                type: FAILURE,
+                payload: e,
+                error: true
+            })//에러 발생
+            
+            throw e
+        }
+    }
+}
+
+modules/sample.js
+import { handleActions } from 'redux-actions'
+import * as api from '../lib/api'
+추가
+import createRequestThunk from '../lib/createRequestThunk'
+
+const GET_POST = 'sample/GET_POST'
+const GET_POST_SUCCESS = 'sample/GET_POST_SUCCESS'
+const GET_POST_FAILURE = 'sample/GET_POST_FAILURE'
+
+const GET_USERS = 'sample/GET_USERS'
+const GET_USERS_SUCCESS = 'sample/GET_USERS_SUCCESS'
+const GET_USERS_FAILURE = 'sample/GET_USERS_FAILURE'
+
+변경
+export const getPost = createRequestThunk(GET_POST, api.getPost)
+export const getUsers = createRequestThunk(GET_USERS, api.getUsers)
+
+//초기 상태
+const initialState = {
+    //로딩 중 상태 
+    loading: {
+        GET_POST: false,
+        GET_USERS: false
+    },
+    post: null,
+    users: null
+}
+
+const sample = handleActions(
+    {
+        [GET_POST]: state => ({
+            ...state,
+            loading: {
+                ...state.loading,
+                //요청 시작
+                GET_POST: true
+            }
+        }),
+        [GET_POST_SUCCESS]: (state, aciton) => ({
+            ...state,
+            loading: {
+                ...state.loading,
+                //요청 완료
+                GET_POST: false 
+            }
+            post: action.payload
+        }),
+        [GET_POST_FAILURE]: (state, aciton) => ({
+            ...state,
+            loading: {
+                ...state.loading,
+                //요청 완료
+                GET_POST: false
+            }
+        }),
+        [GET_USERS]: state => ({
+            ...state,
+            loading: {
+                ...state,loading,
+                GET_USERS: true
+            }
+        }),
+        [GET_USERS_SUCCESS]: (state, action) => ({
+            ...state,
+            loading: {
+                ...state.loading,
+                GET_USERS: false
+            },
+            users: action.payload
+        }),
+        [GET_USERS_FAILURE]: (state, aciton) => ({
+            ...state,
+            loading: {
+                ...state.loading,
+                GET_USERS: false
+            }
+        })
+    },
+    initialState
+)
+
+export default sample
+
+로딩 리펙토링
+modules/loading.js
+import { createAction, handleActions } from 'redux-actions'
+
+const START_LOADING = 'loading/START_LOADING'
+const FINISH_LOADING = 'loading/FINISH_LOADING'
+
+export const startLoading = createAction(
+    //액션
+    START_LOADING,
+    //페이로드 (요청을 위한 액션 타입이 들어감 "sample/GET_POST")
+    requestType => requestType
+)
+
+export const finishLoading = createAction(
+    FINISH_LOADING,
+    requestType => requestType
+)
+
+const initialState = {}
+
+const loading = handleActions(
+    {
+        [START_LOADING]: (state, action) => ({
+            ...state,
+            [action.payload]: true
+        }),
+        [FINISH_LOADING]: (state, aciton) => ({
+            ...state,
+            [action.payload]: false,
+        })
+    },
+    initialState
+)
+
+export default loading
+
+루트 리듀서 등록
+modules/index.js
+import { combineReducers } from 'redux'
+import counter from './counter'
+import sample from './sample'
+import loading from './loading'
+
+const rootReducer = combineReducers({
+    counter,
+    sample,
+    loading
+})
+
+export default rootReducer
+
+lib/createRequestThunk.js
+추가
+import { startLoading, finishLoading } from '../modules/loading'
+
+export default function createRequestThunk(type, request) {
+    //성공 및 실패 액션 타입 정의
+    const SUCCESS = `${type}_SUCCESS`
+    const FAILURE = `${type}_FAILURE`
+
+    return params => async dispatch => {
+        //시작
+        dispatch({ type }) 
+        //추가
+        dispatch(startLoading(type))
+
+        try{
+            const response = await request(params)
+
+            dispatch({
+                type: SUCCESS,
+                payload: response.data
+            }) //성공
+            //추가
+            dispatch(finishLoading(type))
+        }catch(e){
+            dispatch({
+                type: FAILURE,
+                payload: e,
+                error: true
+            })//에러 발생
+            
+            //추가
+            dispatch(finishLoading(type))
+            throw e
+        }
+    }
+}
+
+containers/SampleContainer.js
+import { connect } from 'react-redux'
+import Sample from '../components/Sample'
+import { getPost, getUsers } from '../modules/sample'
+
+const { useEffect } = React
+
+const SampleContainer = ({
+    getPost,
+    getUsers,
+    post,
+    users,
+    loadingPost,
+    loadingUsers
+}) => {
+    useEffect(() => {
+        getPost(1)
+        getUsers(1)
+    }, [getPost, getUsers])
+
+    return (
+        <Sample 
+            post={post}
+            users={users}
+            loadingPost={loadingPost}
+            loadingUsers={loadingUsers}
+        />
+    )
+}
+
+export default connect(
+    ({ sample }) => ({
+        post: sample.post,
+        users: sample.users,
+        //loadingPost: sample.loading.GET_POST,
+        //loadingUsers: sample.loading.GET_USERS
+        //sample 모듈이 아닌 loading 모듈에서 불러온다
+        loadingPost: loading['sample/GET_POST'],
+        loadingUsers: loading['sample/GET_USERS'],
+    }),
+    {
+        getPost,
+        getUsers
+    }
+)(SampleContainer)
+
+
+modules/sample.js
+import { handleActions } from 'redux-actions'
+import * as api from '../lib/api'
+import createRequestThunk from '../lib/createRequestThunk'
+
+변경
+const GET_POST = 'sample/GET_POST'
+const GET_POST_SUCCESS = 'sample/GET_POST_SUCCESS'
+
+변경
+const GET_USERS = 'sample/GET_USERS'
+const GET_USERS_SUCCESS = 'sample/GET_USERS_SUCCESS'
+
+export const getPost = createRequestThunk(GET_POST, api.getPost)
+export const getUsers = createRequestThunk(GET_USERS, api.getUsers)
+
+변경
+const initialState = {
+    post: null,
+    users: null
+}
+
+
+//요청 중, 에러 시 단순하게 로딩 액션만 발생시켰으므로 삭제
+//로딩 중 상태는 loading 객체에서 관리
+//실패 케이스에 무언가를 하고 싶다면 남겨두자
+const sample = handleActions(
+    {
+        [GET_POST_SUCCESS]: (state, aciton) => ({
+            ...state,
+            loading: {
+                ...state.loading,
+                //요청 완료
+                GET_POST: false 
+            }
+            post: action.payload
+        }),
+        [GET_USERS_SUCCESS]: (state, action) => ({
+            ...state,
+            loading: {
+                ...state.loading,
+                GET_USERS: false
+            },
+            users: action.payload
+        }),
+    },
+    initialState
+)
+
+export default sample
